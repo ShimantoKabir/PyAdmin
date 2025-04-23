@@ -1,0 +1,14 @@
+{
+  "python.analysis.extraPaths": ["./src"],
+  "cSpell.words": [
+    "dotenv",
+    "dtos",
+    "poolclass",
+    "pyadmin",
+    "pycache",
+    "repr",
+    "sqlalchemy",
+    "sqlmodel",
+    "sqltypes"
+  ]
+}
