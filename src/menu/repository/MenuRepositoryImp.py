@@ -10,8 +10,10 @@ class MenuRepositoryImp(MenuRepository):
 
   def getMenuById(self, id: int) -> Menu:
     menu = self.db.get(Menu,id)
+
     if not menu:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
+    
     return menu
 
   def add(self, menu: Menu) -> Menu:

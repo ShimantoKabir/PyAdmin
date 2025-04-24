@@ -9,7 +9,6 @@ routes = APIRouter()
 @routes.post("/users/", response_model=UserCreateResponseDto, tags=["create-user"])
 async def createUser(
     user: UserCreateRequestDto,
-    userServiceDep: UserServiceDep,
-    dbSessionDep: DBSessionDep
+    userServiceDep: UserServiceDep
   )->UserCreateResponseDto:
-  return userServiceDep.createUser(user,dbSessionDep)
+  return userServiceDep.createUser(user)

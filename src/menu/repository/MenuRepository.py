@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.menu.model import Menu
+from src.menu.model.Menu import Menu
 
 class MenuRepository(ABC):
   @abstractmethod
