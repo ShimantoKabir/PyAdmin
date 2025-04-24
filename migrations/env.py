@@ -4,7 +4,8 @@ from sqlalchemy import pool
 from sqlmodel import SQLModel
 from alembic import context
 from config import get_env_val
-from models import User
+from src.user.model.User import User
+from src.menu.model.Menu import Menu
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlmodel import select
 from db import DBSessionDep
-from models import User
+from src.user.model.User import User
 from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
 
@@ -10,14 +10,12 @@ class UserService:
     self,
     dto : UserCreateRequestDto,
     db: DBSessionDep
-  ) -> UserCreateResponseDto:
-
+  ) -> UserCreateResponseDto:    
     existUser = db.exec(select(User).filter_by(email=dto.email)).first()
 
     if existUser:
       raise HTTPException(status_code=status.HTTP_302_FOUND, detail="User already exist by this mail!")
       
-
     user = User()
     user.email = dto.email
 
