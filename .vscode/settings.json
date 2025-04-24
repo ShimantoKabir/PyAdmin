@@ -4,6 +4,7 @@
     "dotenv",
     "dtos",
     "poolclass",
+    "psycopg",
     "pyadmin",
     "pycache",
     "repr",
