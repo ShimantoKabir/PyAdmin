@@ -1,5 +1,5 @@
 from src.menu.repository.MenuRepository import MenuRepository
-from src.menu.model import Menu
+from src.menu.model.Menu import Menu
 from db import DBSessionDep
 from fastapi import status, HTTPException
 from sqlmodel import select

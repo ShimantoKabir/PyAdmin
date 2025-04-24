@@ -2,7 +2,6 @@ from fastapi import APIRouter
 from src.menu.dtos.MenuCreateRequestDto import MenuCreateRequestDto
 from src.menu.dtos.MenuCreateResponseDto import MenuCreateResponseDto
 from di import MenuServiceDep
-from db import DBSessionDep
 
 routes = APIRouter()
 
