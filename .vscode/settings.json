@@ -3,10 +3,13 @@
   "cSpell.words": [
     "dotenv",
     "dtos",
+    "fastapi",
+    "passlib",
     "poolclass",
     "psycopg",
     "pyadmin",
     "pycache",
+    "pyjwt",
     "repr",
     "sqlalchemy",
     "sqlmodel",

@@ -2,3 +2,7 @@ psycopg2
 alembic
 sqlmodel
 python-dotenv
+passlib[bcrypt]
+pyjwt
+fastapi[standard]
+jwt

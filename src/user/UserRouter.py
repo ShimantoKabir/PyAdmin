@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from db import DBSessionDep
 from di import UserServiceDep
 from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
