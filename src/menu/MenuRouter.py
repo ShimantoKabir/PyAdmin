@@ -5,7 +5,7 @@ from di import MenuServiceDep
 
 routes = APIRouter()
 
-@routes.post("/menus/", response_model= MenuCreateResponseDto, tags=["create-menu"])
+@routes.post("/menus/", response_model= MenuCreateResponseDto, tags=["menu"])
 async def createMenu(
     menu: MenuCreateRequestDto,
     menuService: MenuServiceDep

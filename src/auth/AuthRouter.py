@@ -5,6 +5,7 @@ from di import AuthServiceDep
 
 routes = APIRouter()
 
-@routes.post("/auth/login", response_model=LoginResponseDto, tags=["auth-login"])
+@routes.post("/auth/login", response_model=LoginResponseDto, tags=["auth"])
 async def login(loginRequestDto: LoginRequestDto, authService: AuthServiceDep) -> LoginResponseDto:
   return authService.login(loginRequestDto)
+  
