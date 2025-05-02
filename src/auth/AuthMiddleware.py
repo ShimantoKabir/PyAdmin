@@ -10,7 +10,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     super().__init__(app)
 
   async def dispatch(self, request: Request, call_next)-> Response:
-    excludedPaths = ["/docs","/openapi.json","/auth/login", "/"]
+    excludedPaths = ["/docs","/openapi.json","/auth/login", "/", "/auth/refresh"]
 
     if request.url.path in excludedPaths:
       return await call_next(request)
