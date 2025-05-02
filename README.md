@@ -2,22 +2,40 @@
 
 A user, role, menu, and api access management system built with FastAPI1
 
-# to install all library
+# To install all library
 
 ```bash
 pip install -r requirements.txt
 ```
 
-# Other commands
+# To generate product evn
 
 ```bash
 python -m venv env
+```
+
+# To active project evn
+
+```bash
 env/Scripts/activate
-pip install "fastapi[standard]"
-pip install alembic
+```
+
+# DB migration commands
+
+```bash
 alembic init migrations
-pip install sqlmodel
+```
+
+```bash
 alembic revision --autogenerate -m "initial commit"
+```
+
+```bash
 alembic upgrade head
+```
+
+# To start the development server
+
+```bash
 fastapi dev main.py
 ```
