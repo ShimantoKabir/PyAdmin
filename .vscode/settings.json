@@ -13,7 +13,8 @@
     "repr",
     "sqlalchemy",
     "sqlmodel",
-    "sqltypes"
+    "sqltypes",
+    "venv"
   ],
   "sqltools.connections": [
     {

@@ -1,9 +1,10 @@
 from logging.config import fileConfig
+from pathlib import Path
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlmodel import SQLModel
 from alembic import context
-from config import get_env_val
+from config import Config
 from src.user.model.User import User
 from src.menu.model.Menu import Menu
 
@@ -12,11 +13,11 @@ from src.menu.model.Menu import Menu
 config = context.config
 
 # sqlite
-# DB_PATH = str((Path().parent / 'db.sqlite').resolve())
-# config.set_main_option('sqlalchemy.url',f"sqlite:///{DB_PATH}")
+DB_PATH = str((Path().parent / 'db.sqlite').resolve())
+config.set_main_option('sqlalchemy.url',f"sqlite:///{DB_PATH}")
 
 # postgresql
-config.set_main_option('sqlalchemy.url', get_env_val("DB_URL"))
+# config.set_main_option('sqlalchemy.url', Config.getValByKey("DB_URL"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

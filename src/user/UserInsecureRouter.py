@@ -5,7 +5,11 @@ from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
 
 routes = APIRouter()
 
-@routes.post("/users/registration", response_model=UserCreateResponseDto, tags=["user"])
+@routes.post(
+  "/users/registration", 
+  response_model=UserCreateResponseDto, 
+  tags=["user"]
+)
 async def registration(
     user: UserCreateRequestDto,
     userServiceDep: UserServiceDep
