@@ -21,5 +21,7 @@ app.add_middleware(AuthMiddleware)
 
 @app.get("/",tags=["health"])
 async def test()->str:
+  for route in app.routes:
+    print(route)
   return "App is running.....!"
 

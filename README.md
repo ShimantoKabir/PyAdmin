@@ -8,7 +8,7 @@ A user, role, menu, and api access management system built with FastAPI1
 pip install -r requirements.txt
 ```
 
-# To generate product evn
+# To generate project evn
 
 ```bash
 python -m venv env

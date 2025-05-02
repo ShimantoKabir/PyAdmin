@@ -13,11 +13,11 @@ from src.menu.model.Menu import Menu
 config = context.config
 
 # sqlite
-DB_PATH = str((Path().parent / 'db.sqlite').resolve())
-config.set_main_option('sqlalchemy.url',f"sqlite:///{DB_PATH}")
+# DB_PATH = str((Path().parent / 'db.sqlite').resolve())
+# config.set_main_option('sqlalchemy.url',f"sqlite:///{DB_PATH}")
 
 # postgresql
-# config.set_main_option('sqlalchemy.url', Config.getValByKey("DB_URL"))
+config.set_main_option('sqlalchemy.url', Config.getValByKey("DB_URL"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
