@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, Header
 from src.user import UserRouter
+from src.user import UserInsecureRouter
 from src.menu import MenuRouter
 from src.auth import AuthRouter
 from src.auth.AuthMiddleware import AuthMiddleware
@@ -14,6 +15,7 @@ app = FastAPI()
 app.include_router(UserRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(MenuRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(AuthRouter.routes)
+app.include_router(UserInsecureRouter.routes)
 
 app.add_middleware(AuthMiddleware)
 
