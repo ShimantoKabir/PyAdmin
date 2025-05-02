@@ -14,5 +14,16 @@
     "sqlalchemy",
     "sqlmodel",
     "sqltypes"
+  ],
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "driver": "PostgreSQL",
+      "name": "PG-DB-LOCAL",
+      "database": "pyadmin",
+      "username": "postgres",
+      "connectString": "postgresql://postgres:5432@localhost:5432/pyadmin"
+    }
   ]
 }
