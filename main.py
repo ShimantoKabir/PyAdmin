@@ -9,7 +9,7 @@ from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 
 def getEmail(email: Annotated[str, Header()]):
-    return email
+  return email
 
 app = FastAPI()
 
@@ -35,7 +35,5 @@ app.add_middleware(
 
 @app.get("/",tags=["health"])
 async def test()->str:
-  for route in app.routes:
-    print(route)
   return "App is running.....!"
 
