@@ -8,18 +8,26 @@ from fastapi import status, HTTPException
 from src.user.dtos.UserResponseDto import UserResponseDto
 from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
 from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
+from src.email.EmailService import EmailService
 
 class UserService:
   otpPopulation: str = "0123456789"
   userCreationResponseMessage: str = "A otp has been sent to your mail, please use the otp and verify your account!"
 
-  def __init__(self, userRepository : UserRepository, crypto: CryptContext):
+  def __init__(
+      self, 
+      userRepository : UserRepository, 
+      crypto: CryptContext,
+      emailService : EmailService
+    ):
     self.repo = userRepository
     self.crypto = crypto
+    self.emailService = emailService
 
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()
     newUser = self.repo.add(User(email=reqDto.email,password=self.crypto.hash(reqDto.password),otp=otp))
+    self.emailService.setAccountVerification(newUser.email, otp)
     resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResponseMessage)
     return resUser
   

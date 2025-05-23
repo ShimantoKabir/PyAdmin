@@ -1,10 +1,10 @@
+import jwt
 from passlib.context import CryptContext
 from src.auth.repository.AuthRepository import AuthRepository
 from src.auth.dtos.LoginRequestDto import LoginRequestDto
 from src.auth.dtos.LoginResponseDto import LoginResponseDto
 from src.user.model.User import User
 from fastapi import status, HTTPException
-import jwt
 from datetime import datetime, timedelta, timezone
 from config import Config
 from src.auth.dtos.AuthRefreshResponseDto import AuthRefreshResponseDto
@@ -22,6 +22,12 @@ class AuthService:
 
     if not dbUser:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    if not dbUser.verified:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not verified yet!")
+    
+    if dbUser.disabled:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account has been disabled!")
   
     isPasswordVerified = self.crypto.verify(reqDto.password, dbUser.password)
 

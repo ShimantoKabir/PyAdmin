@@ -3,7 +3,9 @@
   "cSpell.words": [
     "dotenv",
     "dtos",
+    "esmtp",
     "fastapi",
+    "mailmug",
     "onupdate",
     "passlib",
     "poolclass",
