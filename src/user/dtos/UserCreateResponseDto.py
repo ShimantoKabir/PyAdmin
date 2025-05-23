@@ -5,3 +5,4 @@ from pydantic import EmailStr
 class UserCreateResponseDto:
   id: int
   email: EmailStr
+  message: str

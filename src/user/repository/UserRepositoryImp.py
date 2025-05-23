@@ -25,7 +25,16 @@ class UserRepositoryImp(UserRepository):
     self.db.refresh(user)
 
     return user
+  
+  def getUserByEmail(self, email: str) -> User:
+    return self.db.exec(select(User).filter_by(email=email)).first()
+  
+  def updateUser(self, user: User):
 
+    self.db.add(user)
+    self.db.commit()
+    self.db.refresh(user)
 
+    return user
 
   

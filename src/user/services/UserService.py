@@ -1,20 +1,52 @@
+import random
 from src.user.model.User import User
 from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
 from src.user.repository.UserRepository import UserRepository
 from passlib.context import CryptContext
+from fastapi import status, HTTPException
 from src.user.dtos.UserResponseDto import UserResponseDto
+from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
+from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
 
 class UserService:
+  otpPopulation: str = "0123456789"
+  userCreationResponseMessage: str = "A otp has been sent to your mail, please use the otp and verify your account!"
+
   def __init__(self, userRepository : UserRepository, crypto: CryptContext):
     self.repo = userRepository
     self.crypto = crypto
 
-  def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:    
-    newUser = self.repo.add(User(email=reqDto.email,password=self.crypto.hash(reqDto.password)))
-    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email)
+  def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
+    otp = self.generateOtp()
+    newUser = self.repo.add(User(email=reqDto.email,password=self.crypto.hash(reqDto.password),otp=otp))
+    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResponseMessage)
     return resUser
   
   def getUserById(self, id: int)-> UserResponseDto:
     dbUser = self.repo.getUserById(id=id)
     return UserResponseDto(id=dbUser.id, email=dbUser.email)
+  
+  def generateOtp(self)->str:
+    otp = ''.join(random.choices(self.otpPopulation, k=6))
+    return otp
+  
+  def verify(self, reqDto: UserVerificationRequestDto)-> UserVerificationResponseDto:
+
+    dbUser: User = self.repo.getUserByEmail(reqDto.email)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    if dbUser.verified:
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already verified!")
+
+    if dbUser.otp != reqDto.otp:
+      raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Otp didn't match!")
+    
+    dbUser.verified = True
+
+    self.repo.updateUser(dbUser)
+
+    resDto = UserVerificationResponseDto(message="User verified successfully!")
+    return resDto

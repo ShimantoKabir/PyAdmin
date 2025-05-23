@@ -9,3 +9,11 @@ class UserRepository(ABC):
   @abstractmethod
   def add(self, user: User) -> User:
     pass
+
+  @abstractmethod
+  def getUserByEmail(self, email: str) -> User:
+    pass
+
+  @abstractmethod
+  def updateUser(self, user: User) -> User:
+    pass
