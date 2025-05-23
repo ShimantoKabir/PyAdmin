@@ -27,7 +27,7 @@ class UserService:
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()
     newUser = self.repo.add(User(email=reqDto.email,password=self.crypto.hash(reqDto.password),otp=otp))
-    self.emailService.setAccountVerification(newUser.email, otp)
+    self.emailService.sendAccountVerificationOtp(newUser.email, otp)
     resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResponseMessage)
     return resUser
   

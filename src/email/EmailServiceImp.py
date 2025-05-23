@@ -6,7 +6,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 class EmailServiceImp(EmailService):
-
   host: str = Config.getValByKey("HOST")
   port: int = int(Config.getValByKey("PORT"))
   username: str = Config.getValByKey("UNAME")
@@ -16,21 +15,7 @@ class EmailServiceImp(EmailService):
   def __init__(self, bgTask: BackgroundTasks):
     self.bgTask = bgTask
 
-  def sendMail(self, email: str, otp: str):
-
-    print("password=",self.password)
-    print("username=",self.username)
-    print("host=",self.host)
-    print("port=",self.port)
-
-    html : str = f"""
-      <html>
-        <body>
-          <p>Please use this otp: {otp} to verify you account</p>
-        </body>
-      </html>
-    """
-
+  def sendMail(self, email: str, html: str):
     message = MIMEMultipart("alternative")
     message["Subject"] = "Account verification otp!"
     message["From"] = self.sender
@@ -45,6 +30,14 @@ class EmailServiceImp(EmailService):
     server.login(self.username, self.password)
     server.sendmail(self.sender, email, message.as_string())
   
-  def setAccountVerification(self, email: str, otp: str) -> bool:
-    self.bgTask.add_task(self.sendMail, email, otp)
+  def sendAccountVerificationOtp(self, email: str, otp: str) -> bool:
+    html : str = f"""
+      <html>
+        <body>
+          <p>Please use this otp: {otp} to verify you account</p>
+        </body>
+      </html>
+    """
+
+    self.bgTask.add_task(self.sendMail, email, html)
     return True
