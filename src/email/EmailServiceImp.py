@@ -10,7 +10,7 @@ class EmailServiceImp(EmailService):
   port: int = int(Config.getValByKey("PORT"))
   username: str = Config.getValByKey("UNAME")
   password: str = Config.getValByKey("PASSWORD")
-  sender: str = "pyadmin@mail.com"
+  sender: str = Config.getValByKey("SENDER")
 
   def __init__(self, bgTask: BackgroundTasks):
     self.bgTask = bgTask

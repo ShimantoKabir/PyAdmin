@@ -11,8 +11,8 @@ from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDt
 from src.email.EmailService import EmailService
 
 class UserService:
-  otpPopulation: str = "0123456789"
-  userCreationResponseMessage: str = "A otp has been sent to your mail, please use the otp and verify your account!"
+  otpPopulationDigits: str = "0123456789"
+  userCreationResMsg: str = "A otp has been sent to your mail, please use the otp and verify your account!"
 
   def __init__(
       self, 
@@ -28,7 +28,7 @@ class UserService:
     otp = self.generateOtp()
     newUser = self.repo.add(User(email=reqDto.email,password=self.crypto.hash(reqDto.password),otp=otp))
     self.emailService.sendAccountVerificationOtp(newUser.email, otp)
-    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResponseMessage)
+    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResMsg)
     return resUser
   
   def getUserById(self, id: int)-> UserResponseDto:
@@ -36,7 +36,7 @@ class UserService:
     return UserResponseDto(id=dbUser.id, email=dbUser.email)
   
   def generateOtp(self)->str:
-    otp = ''.join(random.choices(self.otpPopulation, k=6))
+    otp = ''.join(random.choices(self.otpPopulationDigits, k=6))
     return otp
   
   def verify(self, reqDto: UserVerificationRequestDto)-> UserVerificationResponseDto:
