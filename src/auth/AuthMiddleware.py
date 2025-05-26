@@ -17,7 +17,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
       "/", 
       "/auth/refresh", 
       "/users/registration",
-      "/users/verify"
+      "/users/verify",
+      "/users/forgot-password-otp"
     ]
 
     if request.url.path in excludedPaths:

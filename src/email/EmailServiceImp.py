@@ -15,9 +15,9 @@ class EmailServiceImp(EmailService):
   def __init__(self, bgTask: BackgroundTasks):
     self.bgTask = bgTask
 
-  def sendMail(self, email: str, html: str):
+  def sendMail(self, email: str, html: str, subject: str):
     message = MIMEMultipart("alternative")
-    message["Subject"] = "Account verification otp!"
+    message["Subject"] = subject
     message["From"] = self.sender
     message["To"] = email
 
@@ -34,10 +34,22 @@ class EmailServiceImp(EmailService):
     html : str = f"""
       <html>
         <body>
-          <p>Please use this otp: {otp} to verify you account</p>
+          <p>Please use this otp: {otp} to verify you account!</p>
         </body>
       </html>
     """
 
-    self.bgTask.add_task(self.sendMail, email, html)
+    self.bgTask.add_task(self.sendMail, email, html, "Account verification otp!")
+    return True
+  
+  def sendForgotPasswordOtp(self, email: str, otp: str) -> bool:
+    html : str = f"""
+      <html>
+        <body>
+          <p>Please use this otp: {otp} to reset you password!</p>
+        </body>
+      </html>
+    """
+
+    self.bgTask.add_task(self.sendMail, email, html, "Password reset otp!")
     return True

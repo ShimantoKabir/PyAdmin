@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 import random
+from config import Config
 from src.user.model.User import User
 from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
@@ -9,10 +11,13 @@ from src.user.dtos.UserResponseDto import UserResponseDto
 from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
 from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
 from src.email.EmailService import EmailService
+from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDto
+from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
 
 class UserService:
   otpPopulationDigits: str = "0123456789"
   userCreationResMsg: str = "A otp has been sent to your mail, please use the otp and verify your account!"
+  otpExpiryDuration: int = int(Config.getValByKey("OTP_EXPIRY_DURATION"))
 
   def __init__(
       self, 
@@ -48,6 +53,14 @@ class UserService:
     
     if dbUser.verified:
       raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already verified!")
+    
+    if not dbUser.updatedAt:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No otp creation date found to calculate otp expiration!")
+
+    otpDuration: int = self.calculateSecondDiff(datetime.now(timezone.utc), dbUser.updatedAt)
+
+    if otpDuration > self.otpExpiryDuration :
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Otp expired!")
 
     if dbUser.otp != reqDto.otp:
       raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Otp didn't match!")
@@ -58,3 +71,25 @@ class UserService:
 
     resDto = UserVerificationResponseDto(message="User verified successfully!")
     return resDto
+  
+  def sendForgotPasswordOtp(
+      self, 
+      reqDto: ForgotPasswordOtpRequestDto
+    ) -> ForgotPasswordOtpResponseDto :
+    
+    dbUser: User = self.repo.getUserByEmail(reqDto.email)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    otp = self.generateOtp()
+    dbUser.otp = otp
+    self.repo.updateUser(dbUser)
+
+    self.emailService.sendForgotPasswordOtp(dbUser.email, otp)
+
+    return ForgotPasswordOtpResponseDto(message="To reset your password, a otp has been sent to your mail!")
+  
+  def calculateSecondDiff(self, end: datetime, start: datetime) -> int:
+    timeDiff = end - start
+    return timeDiff.seconds

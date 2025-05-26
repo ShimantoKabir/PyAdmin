@@ -4,6 +4,8 @@ from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
 from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
 from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
+from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDto
+from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
 
 routes = APIRouter()
 
@@ -24,3 +26,10 @@ async def verify(
     userService: UserServiceDep
   )-> UserVerificationResponseDto:
   return userService.verify(reqDto)
+
+@routes.post("/users/forgot-password-otp", tags=["user"])
+async def forgotPassword(
+    reqDto: ForgotPasswordOtpRequestDto, 
+    userService: UserServiceDep
+  )-> ForgotPasswordOtpResponseDto:
+  return userService.sendForgotPasswordOtp(reqDto)
