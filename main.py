@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Header, BackgroundTasks
+from fastapi import Depends, FastAPI, Header
 from src.user import UserRouter
 from src.user import UserInsecureRouter
 from src.menu import MenuRouter
@@ -32,9 +32,6 @@ app.add_middleware(
   allow_methods=["*"],               
   allow_headers=["*"],               
 )
-
-def writeLog(message: str):
-  print(message)
 
 @app.get("/",tags=["health"])
 async def test()->str:
