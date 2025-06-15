@@ -7,6 +7,7 @@ from src.auth.AuthMiddleware import AuthMiddleware
 from fastapi.security import HTTPBearer
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 def getEmail(email: Annotated[str, Header()]):
   return email
@@ -32,6 +33,8 @@ app.add_middleware(
   allow_methods=["*"],               
   allow_headers=["*"],               
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/",tags=["health"])
 async def test()->str:
