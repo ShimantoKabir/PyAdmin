@@ -7,6 +7,7 @@
     "fastapi",
     "mailmug",
     "onupdate",
+    "Organization",
     "passlib",
     "poolclass",
     "psycopg",
@@ -17,7 +18,10 @@
     "sqlalchemy",
     "sqlmodel",
     "sqltypes",
+    "User",
     "userinfo",
+    "userinfos",
+    "userorglink",
     "venv"
   ],
   "sqltools.connections": [

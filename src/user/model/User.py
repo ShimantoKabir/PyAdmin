@@ -1,7 +1,8 @@
 from typing import Optional
 from datetime import datetime
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy import Column, DateTime, func
+from src.db.links.UserOrgLinks import UserOrgLink
 
 class User(SQLModel, table=True):
 
@@ -13,6 +14,8 @@ class User(SQLModel, table=True):
   otp: str = Field(default=None, nullable=True)
   verified: bool = Field(default=False , nullable=False)
   disabled: bool = Field(default=False , nullable=False)
+  super: bool = Field(default=False , nullable=False)
+  orgs: list["Organization"] = Relationship(back_populates="userinfos", link_model=UserOrgLink) # type: ignore
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True
