@@ -13,6 +13,7 @@ from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDt
 from src.email.EmailService import EmailService
 from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDto
 from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
+from src.org.model.Organization import Organization
 
 class UserService:
   otpPopulationDigits: str = "0123456789"
@@ -31,7 +32,15 @@ class UserService:
 
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()
-    newUser = self.repo.add(User(email=reqDto.email,password=self.crypto.hash(reqDto.password),otp=otp))
+    
+
+    newUser = self.repo.add(User(
+      email=reqDto.email,
+      password=self.crypto.hash(reqDto.password),
+      otp=otp,
+      super=True,
+      orgs=[]
+    ))
     self.emailService.sendAccountVerificationOtp(newUser.email, otp)
     resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResMsg)
     return resUser
@@ -54,10 +63,10 @@ class UserService:
     if dbUser.verified:
       raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already verified!")
     
-    if not dbUser.updatedAt:
+    if not dbUser.createdAt:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No otp creation date found to calculate otp expiration!")
 
-    otpDuration: int = self.calculateSecondDiff(datetime.now(timezone.utc), dbUser.updatedAt)
+    otpDuration: int = self.calculateSecondDiff(datetime.now(timezone.utc), dbUser.createdAt)
 
     if otpDuration > self.otpExpiryDuration :
       raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Otp expired!")

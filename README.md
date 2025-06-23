@@ -39,3 +39,7 @@ alembic upgrade head
 ```bash
 fastapi dev main.py
 ```
+
+# Mail service
+
+For development mailmug has been used
