@@ -1,0 +1,2 @@
+class OrgService:
+  pass

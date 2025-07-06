@@ -7,14 +7,17 @@ from db import DBSessionDep
 from src.menu.repository.MenuRepositoryImp import MenuRepositoryImp
 from src.user.repository.UserRepositoryImp import UserRepositoryImp
 from src.auth.repository.AuthRepositoryImp import AuthRepositoryImp
+from src.org.repository.OrgRepositoryImp import OrgRepositoryImp
 from src.email.EmailServiceImp import EmailServiceImp
 from passlib.context import CryptContext
 
+
 def getUserService(db: DBSessionDep, bgTask: BackgroundTasks) -> UserService:
   crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
-  repo = UserRepositoryImp(db)
+  userRepo = UserRepositoryImp(db)
+  orgRepo = OrgRepositoryImp(db)
   emailService = EmailServiceImp(bgTask)
-  return UserService(repo, crypto, emailService)
+  return UserService(userRepo, orgRepo, crypto, emailService)
 
 def getMenuService(db: DBSessionDep) -> MenuService:
   repo = MenuRepositoryImp(db)

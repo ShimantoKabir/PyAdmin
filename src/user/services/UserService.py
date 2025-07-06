@@ -1,6 +1,11 @@
 from datetime import datetime, timezone
 import random
+from typing import List
+
+from pydantic import HttpUrl
 from config import Config
+from src.org.dtos.OrgAddReqDto import OrgAddReqDto
+from src.org.dtos.OrgAddResDto import OrgAddResDto
 from src.user.model.User import User
 from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
@@ -14,6 +19,7 @@ from src.email.EmailService import EmailService
 from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDto
 from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
 from src.org.model.Organization import Organization
+from src.org.repository.OrgRepository import OrgRepository
 
 class UserService:
   otpPopulationDigits: str = "0123456789"
@@ -23,17 +29,18 @@ class UserService:
   def __init__(
       self, 
       userRepository : UserRepository, 
+      orgRepository: OrgRepository,
       crypto: CryptContext,
       emailService : EmailService
     ):
     self.repo = userRepository
     self.crypto = crypto
     self.emailService = emailService
+    self.orgRepo = orgRepository
 
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()
     
-
     newUser = self.repo.add(User(
       email=reqDto.email,
       password=self.crypto.hash(reqDto.password),
@@ -102,3 +109,32 @@ class UserService:
   def calculateSecondDiff(self, end: datetime, start: datetime) -> int:
     timeDiff = end - start
     return timeDiff.seconds
+
+  def addOrg(self, reqDto: OrgAddReqDto, authMail: str) -> OrgAddResDto: 
+    dbUser: User = self.repo.getUserByEmail(authMail)
+
+    print("dbUser=",dbUser)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+
+    isDomainExist = any(org.domain == reqDto.domain for org in dbUser.orgs)
+
+    if isDomainExist:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="This organization already added for this user!")
+    
+    org = self.orgRepo.getUserByDomain(reqDto.domain)
+
+    if not org:
+      org = self.addOrg(Organization(name=reqDto.name,domain=reqDto.domain,websites=list(map(str, reqDto.websites))))
+
+    dbUser.orgs = [org]
+    self.repo.updateUser(dbUser)
+
+    return OrgAddResDto(id=org.id,name=org.name,domain=org.domain,websites=org.websites)
+
+
+
+
+    
+    
