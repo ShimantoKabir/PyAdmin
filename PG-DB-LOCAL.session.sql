@@ -1,6 +1,6 @@
--- SELECT * FROM userinfo;
-SELECT * FROM userorglink;
-SELECT * FROM organization;
+SELECT * FROM userinfo;
+-- SELECT * FROM userorglink;
+-- SELECT * FROM organization;
 -- SELECT * FROM alembic_version;
 -- DELETE FROM userinfo;
 -- DELETE FROM organization;

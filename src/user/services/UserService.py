@@ -20,6 +20,9 @@ from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDt
 from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
 from src.org.model.Organization import Organization
 from src.org.repository.OrgRepository import OrgRepository
+from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
+from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
+from dataclasses import asdict
 
 class UserService:
   otpPopulationDigits: str = "0123456789"
@@ -132,6 +135,41 @@ class UserService:
     self.repo.updateUser(dbUser)
 
     return OrgAddResDto(id=org.id,name=org.name,domain=org.domain,websites=org.websites)
+
+  def updateUserById(self, id: int, reqDto: UpdateUserRequestDto)-> UpdateUserResponseDto:
+    dbUser: User = self.repo.getUserById(id)
+    print("dbUser=",dbUser)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this ID!")
+    
+    if reqDto.firstName:
+      dbUser.firstName = reqDto.firstName
+
+    if reqDto.lastName:
+     dbUser.lastName = reqDto.lastName
+
+    if reqDto.contactNumber:
+      dbUser.contactNumber = reqDto.contactNumber
+
+    if reqDto.disabled is not None:
+      dbUser.disabled = reqDto.disabled
+
+    if reqDto.super is not None:
+      dbUser.super = reqDto.super
+
+    updateUser = self.repo.updateUser(dbUser)
+
+    return UpdateUserResponseDto(
+      id=updateUser.id, 
+      disabled=updateUser.disabled,
+      super=updateUser.super,
+      firstName=updateUser.firstName,
+      lastName=updateUser.lastName,
+      contactNumber=updateUser.contactNumber
+    )
+
+
 
 
 

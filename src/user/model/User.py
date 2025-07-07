@@ -16,6 +16,9 @@ class User(SQLModel, table=True):
   disabled: bool = Field(default=False , nullable=False)
   super: bool = Field(default=False , nullable=False)
   orgs: list["Organization"] = Relationship(back_populates="users", link_model=UserOrgLink) # type: ignore
+  firstName: str = Field(default=None, nullable=True)
+  lastName: str = Field(default=None, nullable=True)
+  contactNumber: str = Field(default=None, nullable=True)
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True
