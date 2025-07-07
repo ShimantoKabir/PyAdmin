@@ -126,9 +126,9 @@ class UserService:
     org = self.orgRepo.getUserByDomain(reqDto.domain)
 
     if not org:
-      org = self.addOrg(Organization(name=reqDto.name,domain=reqDto.domain,websites=list(map(str, reqDto.websites))))
+      org = self.orgRepo.add(Organization(name=reqDto.name,domain=reqDto.domain,websites=list(map(str, reqDto.websites))))
 
-    dbUser.orgs = [org]
+    dbUser.orgs.append(org)
     self.repo.updateUser(dbUser)
 
     return OrgAddResDto(id=org.id,name=org.name,domain=org.domain,websites=org.websites)

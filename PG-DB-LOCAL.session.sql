@@ -1,6 +1,10 @@
-SELECT * FROM userinfo;
+-- SELECT * FROM userinfo;
+SELECT * FROM userorglink;
+SELECT * FROM organization;
 -- SELECT * FROM alembic_version;
 -- DELETE FROM userinfo;
+-- DELETE FROM organization;
+-- DELETE FROM userorglink;
 
 -- DELETE FROM alembic_version WHERE version_num = 'b97a65ac9ca7';
 
