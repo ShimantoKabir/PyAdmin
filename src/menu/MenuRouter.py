@@ -9,7 +9,7 @@ routes = APIRouter()
   "/menus/", 
   response_model= MenuCreateResponseDto, 
   tags=["menu"],
-  name="act-create-menu"
+  name="act:create-menu"
 )
 async def createMenu(
     menu: MenuCreateRequestDto,
