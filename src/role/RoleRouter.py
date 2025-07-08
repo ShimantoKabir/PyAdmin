@@ -6,7 +6,7 @@ from di import RoleServiceDep
 routes = APIRouter()
 
 @routes.post(
-  "/role/", 
+  "/roles/", 
   response_model= RoleCreateResponseDto, 
   tags=["role"],
   name="act:create-role"

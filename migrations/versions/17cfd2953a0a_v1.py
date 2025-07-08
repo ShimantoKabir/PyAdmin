@@ -1,8 +1,8 @@
 """v1
 
-Revision ID: d594bae79575
+Revision ID: 17cfd2953a0a
 Revises: 
-Create Date: 2025-06-23 15:15:50.074009
+Create Date: 2025-07-08 20:15:03.587305
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd594bae79575'
+revision: str = '17cfd2953a0a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -36,13 +36,21 @@ def upgrade() -> None:
     op.create_table('organization',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('domain', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('websites', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('disabled', sa.Boolean(), nullable=False),
     sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('domain')
     )
     op.create_index(op.f('ix_organization_name'), 'organization', ['name'], unique=False)
+    op.create_table('role',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_role_name'), 'role', ['name'], unique=False)
     op.create_table('userinfo',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -51,6 +59,9 @@ def upgrade() -> None:
     sa.Column('verified', sa.Boolean(), nullable=False),
     sa.Column('disabled', sa.Boolean(), nullable=False),
     sa.Column('super', sa.Boolean(), nullable=False),
+    sa.Column('firstName', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('lastName', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('contactNumber', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
     sa.PrimaryKeyConstraint('id')
@@ -71,6 +82,8 @@ def downgrade() -> None:
     op.drop_table('userorglink')
     op.drop_index(op.f('ix_userinfo_email'), table_name='userinfo')
     op.drop_table('userinfo')
+    op.drop_index(op.f('ix_role_name'), table_name='role')
+    op.drop_table('role')
     op.drop_index(op.f('ix_organization_name'), table_name='organization')
     op.drop_table('organization')
     op.drop_index(op.f('ix_menu_name'), table_name='menu')
