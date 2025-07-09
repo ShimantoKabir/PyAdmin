@@ -11,6 +11,7 @@ from src.action.model.Action import Action
 from src.org.model.Organization import Organization
 from src.db.links.UserOrgLinks import UserOrgLink
 from src.role.model.Role import Role
+from src.menutemplate.model.MenuTemplate import MenuTemplate
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

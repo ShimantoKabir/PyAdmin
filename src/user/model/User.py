@@ -19,6 +19,7 @@ class User(SQLModel, table=True):
   firstName: str = Field(default=None, nullable=True)
   lastName: str = Field(default=None, nullable=True)
   contactNumber: str = Field(default=None, nullable=True)
+  menuTemplates: list["MenuTemplate"] = Relationship(back_populates="user") # type: ignore
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True

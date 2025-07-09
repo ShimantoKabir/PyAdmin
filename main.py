@@ -4,6 +4,7 @@ from src.user import UserInsecureRouter
 from src.menu import MenuRouter
 from src.auth import AuthRouter
 from src.role import RoleRouter
+from src.menutemplate import MenuTemplateRouter
 from src.auth.AuthMiddleware import AuthMiddleware
 from fastapi.security import HTTPBearer
 from typing import Annotated
@@ -18,6 +19,7 @@ app = FastAPI()
 app.include_router(UserRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(MenuRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(RoleRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(MenuTemplateRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(AuthRouter.routes)
 app.include_router(UserInsecureRouter.routes)
 

@@ -1,17 +1,14 @@
-from datetime import datetime, timezone
 import random
-from typing import List
-
-from pydantic import HttpUrl
 from config import Config
+from src.user.model.User import User
+from datetime import datetime, timezone
+from passlib.context import CryptContext
+from fastapi import status, HTTPException
 from src.org.dtos.OrgAddReqDto import OrgAddReqDto
 from src.org.dtos.OrgAddResDto import OrgAddResDto
-from src.user.model.User import User
 from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
 from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
 from src.user.repository.UserRepository import UserRepository
-from passlib.context import CryptContext
-from fastapi import status, HTTPException
 from src.user.dtos.UserResponseDto import UserResponseDto
 from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
 from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
@@ -49,7 +46,8 @@ class UserService:
       password=self.crypto.hash(reqDto.password),
       otp=otp,
       super=True,
-      orgs=[]
+      orgs=[],
+      menuTemplates=[]
     ))
     self.emailService.sendAccountVerificationOtp(newUser.email, otp)
     resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResMsg)

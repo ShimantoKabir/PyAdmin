@@ -1,6 +1,8 @@
-SELECT * FROM userinfo;
+-- SELECT * FROM userinfo;
 -- SELECT * FROM userorglink;
 -- SELECT * FROM organization;
+-- SELECT * FROM role;
+SELECT * FROM menutemplate;
 -- SELECT * FROM alembic_version;
 -- DELETE FROM userinfo;
 -- DELETE FROM organization;

@@ -6,6 +6,8 @@
     "esmtp",
     "fastapi",
     "mailmug",
+    "menutemplate",
+    "menutemplates",
     "onupdate",
     "Organization",
     "passlib",
