@@ -12,16 +12,17 @@ from src.auth.repository.AuthRepositoryImp import AuthRepositoryImp
 from src.role.repository.RoleRepositoryImp import RoleRepositoryImp
 from src.menutemplate.repository.MenuTemplateRepositoryImp import MenuTemplateRepositoryImp
 from src.org.repository.OrgRepositoryImp import OrgRepositoryImp
+from src.db.repository.UserOrgLinkRepositoryImp import UserOrgLinkRepositoryImp
 from src.email.EmailServiceImp import EmailServiceImp
 from passlib.context import CryptContext
-
 
 def getUserService(db: DBSessionDep, bgTask: BackgroundTasks) -> UserService:
   crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
   userRepo = UserRepositoryImp(db)
   orgRepo = OrgRepositoryImp(db)
+  userOrgLinkRepo = UserOrgLinkRepositoryImp(db)
   emailService = EmailServiceImp(bgTask)
-  return UserService(userRepo, orgRepo, crypto, emailService)
+  return UserService(userRepo, orgRepo, userOrgLinkRepo, crypto, emailService)
 
 def getMenuService(db: DBSessionDep) -> MenuService:
   repo = MenuRepositoryImp(db)

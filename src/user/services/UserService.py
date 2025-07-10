@@ -19,6 +19,7 @@ from src.org.model.Organization import Organization
 from src.org.repository.OrgRepository import OrgRepository
 from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
 from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
+from src.db.repository.UserOrgLinkRepository import UserOrgLinkRepository
 from dataclasses import asdict
 
 class UserService:
@@ -30,6 +31,7 @@ class UserService:
       self, 
       userRepository : UserRepository, 
       orgRepository: OrgRepository,
+      userOrgLinkRepo: UserOrgLinkRepository,
       crypto: CryptContext,
       emailService : EmailService
     ):
@@ -37,6 +39,7 @@ class UserService:
     self.crypto = crypto
     self.emailService = emailService
     self.orgRepo = orgRepository
+    self.userOrgLinkRepo = userOrgLinkRepo
 
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()

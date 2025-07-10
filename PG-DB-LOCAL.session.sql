@@ -1,12 +1,14 @@
 -- SELECT * FROM userinfo;
--- SELECT * FROM userorglink;
+SELECT * FROM userorglink;
 -- SELECT * FROM organization;
 -- SELECT * FROM role;
-SELECT * FROM menutemplate;
+-- SELECT * FROM menutemplate;
 -- SELECT * FROM alembic_version;
 -- DELETE FROM userinfo;
 -- DELETE FROM organization;
 -- DELETE FROM userorglink;
+
+-- UPDATE userinfo SET disabled = false WHERE id='1';
 
 -- DELETE FROM alembic_version WHERE version_num = 'b97a65ac9ca7';
 

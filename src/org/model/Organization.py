@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import HttpUrl
 from sqlalchemy import Column, DateTime, func
 from datetime import datetime
-from src.db.links.UserOrgLinks import UserOrgLink
+from src.db.links.UserOrgLink import UserOrgLink
 
 class Organization(SQLModel, table=True):
   id: int = Field(default=None, primary_key=True)

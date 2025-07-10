@@ -20,5 +20,5 @@ async def createRole(
 
 
 @routes.get("/menu-templates/{id}", tags=["menu"], name="act:get-menu-template-by-id")
-async def getById(id: int, mtService: MenuTemplateServiceDep)-> str:
+async def getById(id: int, mtService: MenuTemplateServiceDep)-> MenuTemplateResponseDto:
   return mtService.getById(id)

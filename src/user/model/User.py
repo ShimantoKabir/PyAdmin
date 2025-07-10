@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime
 from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy import Column, DateTime, func
-from src.db.links.UserOrgLinks import UserOrgLink
+from src.db.links.UserOrgLink import UserOrgLink
 
 class User(SQLModel, table=True):
 
