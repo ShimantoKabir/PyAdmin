@@ -25,9 +25,6 @@ class AuthService:
     
     if not dbUser.verified:
       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not verified yet!")
-    
-    if dbUser.disabled:
-      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account has been disabled!")
   
     isPasswordVerified = self.crypto.verify(reqDto.password, dbUser.password)
 

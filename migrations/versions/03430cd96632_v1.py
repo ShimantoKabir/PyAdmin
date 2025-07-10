@@ -1,8 +1,8 @@
 """v1
 
-Revision ID: c6eb8b1c7a5a
+Revision ID: 03430cd96632
 Revises: 
-Create Date: 2025-07-09 23:15:22.968761
+Create Date: 2025-07-10 20:33:08.550934
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c6eb8b1c7a5a'
+revision: str = '03430cd96632'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -48,6 +48,8 @@ def upgrade() -> None:
     op.create_table('role',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_role_name'), 'role', ['name'], unique=False)
@@ -57,8 +59,6 @@ def upgrade() -> None:
     sa.Column('password', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('otp', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('verified', sa.Boolean(), nullable=False),
-    sa.Column('disabled', sa.Boolean(), nullable=False),
-    sa.Column('super', sa.Boolean(), nullable=False),
     sa.Column('firstName', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('lastName', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('contactNumber', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
@@ -85,6 +85,8 @@ def upgrade() -> None:
     op.create_table('userorglink',
     sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('orgId', sa.Integer(), nullable=False),
+    sa.Column('disabled', sa.Boolean(), nullable=False),
+    sa.Column('super', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
     sa.ForeignKeyConstraint(['userId'], ['userinfo.id'], ),
     sa.PrimaryKeyConstraint('userId', 'orgId')

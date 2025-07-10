@@ -13,8 +13,6 @@ class User(SQLModel, table=True):
   password: str 
   otp: str = Field(default=None, nullable=True)
   verified: bool = Field(default=False , nullable=False)
-  disabled: bool = Field(default=False , nullable=False)
-  super: bool = Field(default=False , nullable=False)
   orgs: list["Organization"] = Relationship(back_populates="users", link_model=UserOrgLink) # type: ignore
   firstName: str = Field(default=None, nullable=True)
   lastName: str = Field(default=None, nullable=True)

@@ -20,7 +20,7 @@ from src.org.repository.OrgRepository import OrgRepository
 from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
 from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
 from src.db.repository.UserOrgLinkRepository import UserOrgLinkRepository
-from dataclasses import asdict
+from src.db.links.UserOrgLink import UserOrgLink
 
 class UserService:
   otpPopulationDigits: str = "0123456789"
@@ -48,11 +48,24 @@ class UserService:
       email=reqDto.email,
       password=self.crypto.hash(reqDto.password),
       otp=otp,
-      super=True,
-      orgs=[],
+      orgs=[Organization(
+        name="",
+        domain="",
+        websites=[]
+      )],
       menuTemplates=[]
     ))
+
     self.emailService.sendAccountVerificationOtp(newUser.email, otp)
+
+    org: Organization|None = newUser.orgs[0] if newUser.orgs[0] else None
+
+    if org is not None:
+      userOrgLink: UserOrgLink = self.userOrgLinkRepo.get(userId=newUser.id,orgId=org.id)
+      userOrgLink.disabled = False
+      userOrgLink.super = True
+      updatedUserOrgLink = self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
+
     resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResMsg)
     return resUser
   
@@ -117,8 +130,6 @@ class UserService:
   def addOrg(self, reqDto: OrgAddReqDto, authMail: str) -> OrgAddResDto: 
     dbUser: User = self.repo.getUserByEmail(authMail)
 
-    print("dbUser=",dbUser)
-
     if not dbUser:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
 
@@ -137,9 +148,8 @@ class UserService:
 
     return OrgAddResDto(id=org.id,name=org.name,domain=org.domain,websites=org.websites)
 
-  def updateUserById(self, id: int, reqDto: UpdateUserRequestDto)-> UpdateUserResponseDto:
-    dbUser: User = self.repo.getUserById(id)
-    print("dbUser=",dbUser)
+  def updateUser(self, userId: int, orgId: int, reqDto: UpdateUserRequestDto)-> UpdateUserResponseDto:
+    dbUser: User = self.repo.getUserById(userId)
 
     if not dbUser:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this ID!")
@@ -153,18 +163,23 @@ class UserService:
     if reqDto.contactNumber:
       dbUser.contactNumber = reqDto.contactNumber
 
-    if reqDto.disabled is not None:
-      dbUser.disabled = reqDto.disabled
-
-    if reqDto.super is not None:
-      dbUser.super = reqDto.super
-
     updateUser = self.repo.updateUser(dbUser)
+
+    userOrgLink: UserOrgLink|None = self.userOrgLinkRepo.get(userId=userId,orgId=orgId)
+
+    if userOrgLink is not None:
+      if reqDto.disabled is not None:
+        userOrgLink.disabled = reqDto.disabled
+
+      if reqDto.super is not None:
+        userOrgLink.super = reqDto.super
+
+      self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
 
     return UpdateUserResponseDto(
       id=updateUser.id, 
-      disabled=updateUser.disabled,
-      super=updateUser.super,
+      disabled= None if userOrgLink is None else userOrgLink.disabled,
+      super= None if userOrgLink is None else userOrgLink.super,
       firstName=updateUser.firstName,
       lastName=updateUser.lastName,
       contactNumber=updateUser.contactNumber

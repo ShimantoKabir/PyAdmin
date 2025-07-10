@@ -3,7 +3,7 @@ from src.db.links.UserOrgLink import UserOrgLink
 
 class UserOrgLinkRepository(ABC):
   @abstractmethod
-  def edit(self, userId: int, orgId: int) -> UserOrgLink:
+  def edit(self, userOrgLink: UserOrgLink) -> UserOrgLink|None:
     pass
 
   @abstractmethod

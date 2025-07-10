@@ -14,17 +14,18 @@ async def getById(id: int, userService: UserServiceDep)-> UserResponseDto:
   return userService.getUserById(id)
 
 @routes.patch(
-  "/users/{id}", 
+  "/users/{userId}/organization/{orgId}", 
   tags=["user"],
-  name="act:update-user-by-id",
+  name="act:update-user",
   response_model=UpdateUserResponseDto
 )
-async def updateById(
-  id: int, 
+async def updateUser(
+  userId: int, 
+  orgId: int,
   reqDto: UpdateUserRequestDto, 
   userService: UserServiceDep
 )-> UserResponseDto:
-  return userService.updateUserById(id, reqDto)
+  return userService.updateUser(userId, orgId, reqDto)
 
 @routes.post(
   "/users/organizations", 

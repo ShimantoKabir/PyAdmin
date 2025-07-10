@@ -7,10 +7,10 @@ class UserOrgLinkRepositoryImp(UserOrgLinkRepository):
   def __init__(self, db: DBSessionDep):
     self.db = db
 
-  def edit(self, userId: int, orgId: int) -> UserOrgLink|None:
+  def get(self, userId: int, orgId: int) -> UserOrgLink|None:
     return self.db.exec(select(UserOrgLink).filter_by(userId=userId,orgId=orgId)).first()
 
-  def edit(self, userOrgLink: UserOrgLink) -> UserOrgLink|None:    
+  def edit(self, userOrgLink: UserOrgLink) -> UserOrgLink:    
 
     self.db.add(userOrgLink)
     self.db.commit()
