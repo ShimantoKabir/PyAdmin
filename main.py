@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Header
+from fastapi import Depends, Header
 from src.user import UserRouter
 from src.user import UserInsecureRouter
 from src.menu import MenuRouter
@@ -10,16 +10,17 @@ from fastapi.security import HTTPBearer
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from src.action import ActionRouter
+from core import app
 
 def getEmail(email: Annotated[str, Header()]):
   return email
-
-app = FastAPI()
 
 app.include_router(UserRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(MenuRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(RoleRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(MenuTemplateRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(ActionRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(AuthRouter.routes)
 app.include_router(UserInsecureRouter.routes)
 
@@ -39,8 +40,3 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/",tags=["health"])
-async def test()->str:
-  return "App is running.....!"
-

@@ -36,5 +36,8 @@ class UserRepositoryImp(UserRepository):
     self.db.refresh(user)
 
     return user
+  
+  def getAllUser(self)->User:
+    pass
 
   

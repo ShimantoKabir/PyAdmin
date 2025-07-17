@@ -9,7 +9,7 @@ from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
 
 routes = APIRouter()
 
-@routes.get("/users/{id}", tags=["user"], name="act:get-user-by-id")
+@routes.get("/users/{id}", tags=["user"], name="act:get-user")
 async def getById(id: int, userService: UserServiceDep)-> UserResponseDto:
   return userService.getUserById(id)
 
@@ -44,3 +44,9 @@ async def addOrg(
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No mail found on header!")
 
   return userService.addOrg(reqDto, authEmail)
+
+
+@routes.get("/users")
+async def get_users() -> str:
+    
+    return "oK"
