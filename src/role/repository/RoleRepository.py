@@ -9,3 +9,11 @@ class RoleRepository(ABC):
   @abstractmethod
   def add(self, role: Role) -> Role:
     pass
+
+  @abstractmethod
+  def getAllRole(self, rows: int, page: int, orgId: int) -> list[Role]:
+    pass
+
+  @abstractmethod
+  def countAllRole(self, orgId: int) -> int:
+    pass

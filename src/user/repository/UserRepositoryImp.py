@@ -50,7 +50,7 @@ class UserRepositoryImp(UserRepository):
   
   def countAllUser(self, orgId: int) -> int:
     return self.db.exec(
-      select(func.count())
+      select(func.count(User.id))
       .select_from(UserOrgLink)
       .join(User, UserOrgLink.userId==User.id)
       .where(UserOrgLink.orgId == orgId)
