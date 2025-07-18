@@ -9,3 +9,7 @@ class MenuRepository(ABC):
   @abstractmethod
   def add(self, menu: Menu) -> Menu:
     pass
+
+  @abstractmethod
+  def getAllRole(self) -> list[Menu]:
+    pass

@@ -28,6 +28,8 @@ class MenuRepositoryImp(MenuRepository):
 
     return menu
 
+  def getAllRole(self) -> list[Menu]:
+    return self.db.exec(select(Menu)).all()
 
 
   

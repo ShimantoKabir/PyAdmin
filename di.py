@@ -28,7 +28,7 @@ def getMenuService(db: DBSessionDep) -> MenuService:
   repo = MenuRepositoryImp(db)
   return MenuService(repo)
 
-def getMenuService(db: DBSessionDep) -> RoleService:
+def getRoleService(db: DBSessionDep) -> RoleService:
   repo = RoleRepositoryImp(db)
   return RoleService(repo)
 
@@ -44,6 +44,6 @@ def getAuthService(db: DBSessionDep) -> AuthService:
 UserServiceDep = Annotated[UserService, Depends(getUserService)]
 MenuServiceDep = Annotated[MenuService, Depends(getMenuService)]
 AuthServiceDep = Annotated[AuthService, Depends(getAuthService)]
-RoleServiceDep = Annotated[RoleService, Depends(getMenuService)]
+RoleServiceDep = Annotated[RoleService, Depends(getRoleService)]
 MenuTemplateServiceDep = Annotated[MenuTemplateService, Depends(getMenuTemplateService)]
 
