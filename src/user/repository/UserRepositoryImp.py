@@ -3,6 +3,8 @@ from src.user.model.User import User
 from db import DBSessionDep
 from fastapi import status, HTTPException
 from sqlmodel import select
+from sqlalchemy import func
+from src.db.links.UserOrgLink import UserOrgLink
 
 class UserRepositoryImp(UserRepository):
   def __init__(self, db: DBSessionDep):
@@ -37,7 +39,23 @@ class UserRepositoryImp(UserRepository):
 
     return user
   
-  def getAllUser(self)->User:
-    pass
+  def getAllUser(self, rows: int, page: int, orgId: int)->list[User]:
+    offset: int = (page - 1) * rows
+    return self.db.exec(
+      select(User, UserOrgLink)
+      .join(UserOrgLink, UserOrgLink.userId == User.id)
+      .where(UserOrgLink.orgId == orgId)
+      .offset(offset).limit(rows)
+    ).all()
+  
+  def countAllUser(self, orgId: int) -> int:
+    return self.db.exec(
+      select(func.count())
+      .select_from(UserOrgLink)
+      .join(User, UserOrgLink.userId==User.id)
+      .where(UserOrgLink.orgId == orgId)
+    ).one()
+    
+    
 
   

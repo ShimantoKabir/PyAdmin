@@ -21,6 +21,8 @@ from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
 from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
 from src.db.repository.UserOrgLinkRepository import UserOrgLinkRepository
 from src.db.links.UserOrgLink import UserOrgLink
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
 
 class UserService:
   otpPopulationDigits: str = "0123456789"
@@ -71,7 +73,14 @@ class UserService:
   
   def getUserById(self, id: int)-> UserResponseDto:
     dbUser = self.repo.getUserById(id=id)
-    return UserResponseDto(id=dbUser.id, email=dbUser.email)
+    return UserResponseDto(
+      id=dbUser.id, 
+      email=dbUser.email,
+      contactNumber=dbUser.contactNumber,
+      firstName=dbUser.firstName,
+      lastName=dbUser.lastName,
+      verified=dbUser.verified
+    )
   
   def generateOtp(self)->str:
     otp = ''.join(random.choices(self.otpPopulationDigits, k=6))
@@ -184,6 +193,30 @@ class UserService:
       lastName=updateUser.lastName,
       contactNumber=updateUser.contactNumber
     )
+  
+  def getUsers(self, reqDto: PaginationRequestDto)->PaginationResponseDto[UserResponseDto]:
+    total: int|None = reqDto.total
+    userResponseDtoList: list[UserResponseDto] = []
+    users: list[User] = self.repo.getAllUser(rows=reqDto.rows, page=reqDto.page, orgId=reqDto.orgId)
+
+    if reqDto.total is None or reqDto.total == 0:
+      total = self.repo.countAllUser(orgId=reqDto.orgId)
+
+    for u,l in users:
+      urDto: UserResponseDto = UserResponseDto(
+        id=u.id,
+        email=u.email,
+        contactNumber=u.contactNumber,
+        firstName=u.firstName,
+        lastName=u.lastName,
+        verified=u.verified,
+        super=l.super,
+        disabled=l.disabled
+      )
+
+      userResponseDtoList.append(urDto)
+
+    return PaginationResponseDto[UserResponseDto](items=userResponseDtoList, total=total)
 
 
 

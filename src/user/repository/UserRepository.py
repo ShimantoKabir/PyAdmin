@@ -17,3 +17,11 @@ class UserRepository(ABC):
   @abstractmethod
   def updateUser(self, user: User) -> User:
     pass
+
+  @abstractmethod
+  def getAllUser(self, rows: int, page: int, orgId: int) -> list[User]:
+    pass
+
+  @abstractmethod
+  def countAllUser(self, orgId: int) -> int:
+    pass

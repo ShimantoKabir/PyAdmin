@@ -6,6 +6,8 @@ from di import UserServiceDep
 from fastapi import status, HTTPException
 from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
 from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
 
 routes = APIRouter()
 
@@ -45,8 +47,14 @@ async def addOrg(
 
   return userService.addOrg(reqDto, authEmail)
 
-
-@routes.get("/users")
-async def get_users() -> str:
-    
-    return "oK"
+@routes.post(
+  "/users/all",
+  tags=["user"],
+  name="act:get-users",
+  response_model=PaginationResponseDto[UserResponseDto]
+)
+async def getUsers(
+  reqDto: PaginationRequestDto, 
+  userService: UserServiceDep
+) -> PaginationResponseDto[UserResponseDto]:  
+  return userService.getUsers(reqDto)

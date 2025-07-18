@@ -1,5 +1,5 @@
--- SELECT * FROM userinfo;
-SELECT * FROM userorglink;
+SELECT * FROM userinfo;
+-- SELECT * FROM userorglin
 -- SELECT * FROM organization;
 -- SELECT * FROM role;
 -- SELECT * FROM menutemplate;
