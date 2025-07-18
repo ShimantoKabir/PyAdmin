@@ -7,6 +7,8 @@ from src.org.dtos.OrgResDto import OrgResDto
 class MenuTemplateResponseDto:
   id: int
   name: str
-  role: RoleResponseDto
-  org: OrgResDto
+  roleId: int
+  orgId: int
   tree: str
+  roleName: str
+  orgName: str

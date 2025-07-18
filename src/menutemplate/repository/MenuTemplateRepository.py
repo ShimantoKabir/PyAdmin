@@ -9,3 +9,11 @@ class MenuTemplateRepository(ABC):
   @abstractmethod
   def add(self, role: MenuTemplate) -> MenuTemplate:
     pass
+
+  @abstractmethod
+  def getAllMenuTemplate(self, rows: int, page: int, orgId: int) -> list[MenuTemplate]:
+    pass
+
+  @abstractmethod
+  def countAllMenuTemplate(self, orgId: int) -> int:
+    pass
