@@ -3,4 +3,6 @@ from pydantic import constr
 
 @dataclass
 class MenuCreateRequestDto:
-  name: constr(min_length=1) # type: ignore
+  label: constr(min_length=1) # type: ignore
+  icon: constr(min_length=1) # type: ignore
+  href: constr(min_length=1) # type: ignore

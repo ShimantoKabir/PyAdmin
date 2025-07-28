@@ -9,18 +9,25 @@ class MenuService:
     self.repo = menuRepository
 
   def createMenu(self, reqDto: MenuCreateRequestDto) -> MenuCreateResponseDto:
-    newMenu = self.repo.add(Menu(name=reqDto.name))
-    resMenu = MenuCreateResponseDto(id=newMenu.id,name=newMenu.name)
+    newMenu = self.repo.add(Menu(label=reqDto.label, icon=reqDto.icon, href=reqDto.href))
+    resMenu = MenuCreateResponseDto(
+      id=newMenu.id, 
+      label=newMenu.label, 
+      icon=newMenu.icon, 
+      href=newMenu.href
+    )
     return resMenu
   
   def getMenus(self)-> list[MenuResponseDto]:
     menuResponseDtoList: list[MenuResponseDto] = []
-    menus: list[Menu] = self.repo.getAllRole()
+    menus: list[Menu] = self.repo.getAllMenu()
 
     for m in menus:
       menuDto: MenuResponseDto = MenuResponseDto(
         id=m.id,
-        name=m.name
+        label=m.label, 
+        icon=m.icon, 
+        href=m.href
       )
 
       menuResponseDtoList.append(menuDto)

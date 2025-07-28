@@ -11,5 +11,5 @@ class MenuRepository(ABC):
     pass
 
   @abstractmethod
-  def getAllRole(self) -> list[Menu]:
+  def getAllMenu(self) -> list[Menu]:
     pass

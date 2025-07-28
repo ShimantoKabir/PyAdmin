@@ -31,7 +31,7 @@ class AuthService:
     if not isPasswordVerified:
       raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password!")
     
-    token = self.generateToken(dbUser.email)
+    token = self.generateToken(dbUser)
 
     res = LoginResponseDto(accessToken=token.accessToken, refreshToken=token.refreshToken)
     return res
@@ -54,22 +54,32 @@ class AuthService:
     if not dbUser:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
     
-    token = self.generateToken(dbUser.email)
+    token = self.generateToken(dbUser)
 
     res  = AuthRefreshResponseDto(accessToken=token.accessToken,refreshToken=token.refreshToken)
     return res
   
-  def generateToken(self, email: str)->Token:
+  def generateToken(self, user: User)->Token:
     accessTokenExpires = datetime.now(timezone.utc) + timedelta(minutes=int(Config.getValByKey("ACCESS_TOKEN_EXPIRE_MINUTES")))
     refreshTokenExpires = datetime.now(timezone.utc) + timedelta(minutes=int(Config.getValByKey("REFRESH_TOKEN_EXPIRE_MINUTES")))
 
+    orgs = []
+    for o in user.orgs:
+      orgs.append({
+        "id": o.id,
+        "name": o.name,
+        "disabled": o.disabled
+      })
+
     accessToken = jwt.encode({
-      "sub" : email,
+      "sub" : user.email,
+      "orgs" : orgs,
       "exp" : accessTokenExpires
     }, Config.getValByKey("SECRET_KEY"), Config.getValByKey("ALGORITHM"))
 
     refreshToken = jwt.encode({
-      "sub" : email,
+      "sub" : user.email,
+      "orgs" : orgs,
       "exp" : refreshTokenExpires
     }, Config.getValByKey("SECRET_KEY"), Config.getValByKey("ALGORITHM"))
     

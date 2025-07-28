@@ -3,4 +3,6 @@ from dataclasses import dataclass
 @dataclass
 class MenuResponseDto:
   id: int
-  name: int
+  label: str
+  icon: str
+  href: str

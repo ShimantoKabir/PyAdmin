@@ -17,7 +17,7 @@ class MenuRepositoryImp(MenuRepository):
     return menu
 
   def add(self, menu: Menu) -> Menu:
-    existMenu = self.db.exec(select(Menu).filter_by(name=menu.name)).first()
+    existMenu = self.db.exec(select(Menu).filter_by(label=menu.label)).first()
 
     if existMenu:
       raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Menu already exist by this name!")
@@ -28,7 +28,7 @@ class MenuRepositoryImp(MenuRepository):
 
     return menu
 
-  def getAllRole(self) -> list[Menu]:
+  def getAllMenu(self) -> list[Menu]:
     return self.db.exec(select(Menu)).all()
 
 
