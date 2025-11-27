@@ -13,6 +13,7 @@ class Organization(SQLModel, table=True):
   disabled: bool = Field(default=False , nullable=False)
   users: list["User"] = Relationship(back_populates="orgs", link_model=UserOrgLink) # type: ignore
   menuTemplates: List["MenuTemplate"] = Relationship(back_populates="org") # type: ignore
+  experiments: List["Experiment"] = Relationship(back_populates="org") # type: ignore
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True

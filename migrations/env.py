@@ -11,6 +11,11 @@ from src.org.model.Organization import Organization
 from src.db.links.UserOrgLink import UserOrgLink
 from src.role.model.Role import Role
 from src.menutemplate.model.MenuTemplate import MenuTemplate
+from src.experiment.model.Experiment import Experiment
+from src.variation.model.Variation import Variation
+from src.condition.model.Condition import Condition
+from src.metrics.model.Metrics import Metrics
+from src.bucket.model.Bucket import Bucket
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
