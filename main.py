@@ -13,6 +13,20 @@ from fastapi.staticfiles import StaticFiles
 from src.action import ActionRouter
 from core import app
 
+# IMPORT #1: Import all SQLModel models so SQLAlchemy can resolve relationships
+# This must be done before any router that uses these models
+from src.user.model.User import User
+from src.org.model.Organization import Organization
+from src.menu.model.Menu import Menu
+from src.role.model.Role import Role
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+from src.experiment.model.Experiment import Experiment
+from src.variation.model.Variation import Variation
+from src.condition.model.Condition import Condition
+from src.metrics.model.Metrics import Metrics
+from src.bucket.model.Bucket import Bucket
+from src.db.links.UserOrgLink import UserOrgLink
+
 def getEmail(email: Annotated[str, Header()]):
   return email
 

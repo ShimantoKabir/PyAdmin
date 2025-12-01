@@ -5,15 +5,16 @@ services:
     build: .
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
+    # Change #1: Removed code volume mount for production. Uncomment for development only.
+    # volumes:
+    #   - .:/app
     # Add this line to load environment variables from the .env.dev file
     env_file:
       - .env.dev
     depends_on:
       - db
-    command:
-      ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    # Change #2: Removed --reload for production. Add back for development hot reload.
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   db:
     image: postgres:13

@@ -9,7 +9,8 @@ class Metrics(SQLModel, table=True):
   custom: bool = Field(default=False , nullable=False)
   selector: str = Field(default=None, nullable=True)
   triggered: int = Field(default=None, nullable=True)
-  experiment: Optional["Experiment"] = Relationship(back_populates="Metrics") # type: ignore
+  # FIX #4: Changed back_populates from "Metrics" to "metrics" to match Experiment model
+  experiment: Optional["Experiment"] = Relationship(back_populates="metrics") # type: ignore
   description: str = Field(default=None, nullable=True)
   experimentId: Optional[int] = Field(default=None, foreign_key="experiment.id")
   createdAt: Optional[datetime] = Field(

@@ -10,7 +10,9 @@ WORKDIR /app
 
 # Install system dependencies needed for building packages
 # This layer will be cached and only run when this command changes
-RUN apt-get update && apt-get install -y build-essential libpq-dev
+RUN apt-get update && apt-get install -y build-essential libpq-dev \
+    # Change #3: Clean up apt cache to reduce image size
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy only the requirements file first
 COPY requirements.txt .

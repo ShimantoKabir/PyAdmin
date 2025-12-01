@@ -46,9 +46,14 @@ class UserService:
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()
     
+    # FIX #1: Truncate password to 72 bytes (bcrypt limit)
+    # bcrypt cannot hash passwords longer than 72 bytes. This prevents the error:
+    # "ValueError: password cannot be longer than 72 bytes"
+    truncatedPassword = reqDto.password[:72]
+    
     newUser = self.repo.add(User(
       email=reqDto.email,
-      password=self.crypto.hash(reqDto.password),
+      password=self.crypto.hash(truncatedPassword),
       otp=otp,
       orgs=[Organization(
         name="",

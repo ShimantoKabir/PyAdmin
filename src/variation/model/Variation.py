@@ -9,7 +9,8 @@ class Variation(SQLModel, table=True):
   css: str = Field(default=None, nullable=True, sa_type=Text)
   title: str = Field(default=None, nullable=True)
   traffic: int = Field(default=None, nullable=True)
-  experiment: Optional["Experiment"] = Relationship(back_populates="Variations") # type: ignore
+  # FIX #2: Changed back_populates from "Variations" to "variations" to match Experiment model
+  experiment: Optional["Experiment"] = Relationship(back_populates="variations") # type: ignore
   experimentId: Optional[int] = Field(default=None, foreign_key="experiment.id")
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
