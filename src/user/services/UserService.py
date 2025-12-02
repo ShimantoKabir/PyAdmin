@@ -23,20 +23,19 @@ from src.db.repository.UserOrgLinkRepository import UserOrgLinkRepository
 from src.db.links.UserOrgLink import UserOrgLink
 from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
 from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+from src.utils.Constants import OTP_POPULATION_DIGITS, USER_CREATION_RES_MSG
 
 class UserService:
-  otpPopulationDigits: str = "0123456789"
-  userCreationResMsg: str = "A otp has been sent to your mail, please use the otp and verify your account!"
   otpExpiryDuration: int = int(Config.getValByKey("OTP_EXPIRY_DURATION"))
 
   def __init__(
-      self, 
-      userRepository : UserRepository, 
-      orgRepository: OrgRepository,
-      userOrgLinkRepo: UserOrgLinkRepository,
-      crypto: CryptContext,
-      emailService : EmailService
-    ):
+    self, 
+    userRepository : UserRepository, 
+    orgRepository: OrgRepository,
+    userOrgLinkRepo: UserOrgLinkRepository,
+    crypto: CryptContext,
+    emailService : EmailService
+  ):
     self.repo = userRepository
     self.crypto = crypto
     self.emailService = emailService
@@ -55,11 +54,7 @@ class UserService:
       email=reqDto.email,
       password=self.crypto.hash(truncatedPassword),
       otp=otp,
-      orgs=[Organization(
-        name="",
-        domain="",
-        websites=[]
-      )],
+      orgs=[],
       menuTemplates=[]
     ))
 
@@ -73,7 +68,7 @@ class UserService:
       userOrgLink.super = True
       updatedUserOrgLink = self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
 
-    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=self.userCreationResMsg)
+    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=USER_CREATION_RES_MSG)
     return resUser
   
   def getUserById(self, id: int)-> UserResponseDto:
@@ -88,7 +83,7 @@ class UserService:
     )
   
   def generateOtp(self)->str:
-    otp = ''.join(random.choices(self.otpPopulationDigits, k=6))
+    otp = ''.join(random.choices(OTP_POPULATION_DIGITS, k=6))
     return otp
   
   def verify(self, reqDto: UserVerificationRequestDto)-> UserVerificationResponseDto:
@@ -146,6 +141,11 @@ class UserService:
 
     if not dbUser:
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    try:
+      domain = reqDto.email.split("@")[1]
+    except IndexError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format!")
 
     isDomainExist = any(org.domain == reqDto.domain for org in dbUser.orgs)
 
@@ -155,12 +155,18 @@ class UserService:
     org = self.orgRepo.getUserByDomain(reqDto.domain)
 
     if not org:
-      org = self.orgRepo.add(Organization(name=reqDto.name,domain=reqDto.domain,websites=list(map(str, reqDto.websites))))
+      org = self.orgRepo.add(
+        Organization(
+          name=reqDto.name,
+          email=reqDto.email,
+          domain=domain
+        )
+      )
 
     dbUser.orgs.append(org)
     self.repo.updateUser(dbUser)
 
-    return OrgAddResDto(id=org.id,name=org.name,domain=org.domain,websites=org.websites)
+    return OrgAddResDto(id=org.id, name=org.name, email=org.email)
 
   def updateUser(self, userId: int, orgId: int, reqDto: UpdateUserRequestDto)-> UpdateUserResponseDto:
     dbUser: User = self.repo.getUserById(userId)

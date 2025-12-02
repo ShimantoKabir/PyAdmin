@@ -14,8 +14,6 @@ class Experiment(SQLModel, table=True):
   css: str = Field(default=None, nullable=True, sa_type=Text)
   url: str = Field(default=None, nullable=True)
   type: ExperimentType = Field(default=ExperimentType.AB_TEST)
-  org: Optional["Organization"] = Relationship(back_populates="experiments") # type: ignore
-  orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
   title: str = Field(default=None, nullable=True)
   status: ExperimentStatus = Field(default=ExperimentStatus.DRAFT)
   metrics: list["Metrics"] = Relationship(back_populates="experiment") # type: ignore
@@ -24,6 +22,8 @@ class Experiment(SQLModel, table=True):
   description: str = Field(default=None, nullable=True)
   triggerType: TriggerType = Field(default=TriggerType.IMMEDIATELY)
   conditionType: ConditionType = Field(default=ConditionType.ALL)
+  project: Optional["Project"] = Relationship(back_populates="experiments") # type: ignore
+  projectId: Optional[int] = Field(default=None, foreign_key="project.id")
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True

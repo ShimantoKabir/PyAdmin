@@ -15,6 +15,9 @@ from src.org.repository.OrgRepositoryImp import OrgRepositoryImp
 from src.db.repository.UserOrgLinkRepositoryImp import UserOrgLinkRepositoryImp
 from src.email.EmailServiceImp import EmailServiceImp
 from passlib.context import CryptContext
+from src.project.services.ProjectService import ProjectService
+from src.project.repository.ProjectRepositoryImp import ProjectRepositoryImp
+from src.db.repository.UserProjectLinkRepositoryImp import UserProjectLinkRepositoryImp
 
 def getUserService(db: DBSessionDep, bgTask: BackgroundTasks) -> UserService:
   crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -41,9 +44,15 @@ def getAuthService(db: DBSessionDep) -> AuthService:
   repo = AuthRepositoryImp(db)
   return AuthService(repo, crypto)
 
+def getProjectService(db: DBSessionDep) -> ProjectService:
+  projectRepo = ProjectRepositoryImp(db)
+  linkRepo = UserProjectLinkRepositoryImp(db)
+  return ProjectService(projectRepo, linkRepo)
+
 UserServiceDep = Annotated[UserService, Depends(getUserService)]
 MenuServiceDep = Annotated[MenuService, Depends(getMenuService)]
 AuthServiceDep = Annotated[AuthService, Depends(getAuthService)]
 RoleServiceDep = Annotated[RoleService, Depends(getRoleService)]
 MenuTemplateServiceDep = Annotated[MenuTemplateService, Depends(getMenuTemplateService)]
+ProjectServiceDep = Annotated[ProjectService, Depends(getProjectService)]
 

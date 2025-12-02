@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class OrgResDto:
+class ProjectCreateResponseDto:
   id: int
-  name: str 
-  email: str
+  name: str
+  orgId: int

@@ -16,6 +16,8 @@ from src.variation.model.Variation import Variation
 from src.condition.model.Condition import Condition
 from src.metrics.model.Metrics import Metrics
 from src.bucket.model.Bucket import Bucket
+from src.project.model.Project import Project
+from src.db.links.UserProjectLink import UserProjectLink
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

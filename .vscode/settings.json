@@ -29,6 +29,7 @@
     "userinfo",
     "userinfos",
     "userorglink",
+    "userprojectlink",
     "venv"
   ],
   "sqltools.connections": [

@@ -1,19 +1,18 @@
-from sqlmodel import Field, SQLModel, Column, ARRAY, String, Relationship
-from typing import List, Optional
-from pydantic import HttpUrl
-from sqlalchemy import Column, DateTime, func
+from sqlmodel import Field, SQLModel, Relationship, Column, DateTime, func
+from typing import Optional
 from datetime import datetime
 from src.db.links.UserOrgLink import UserOrgLink
 
 class Organization(SQLModel, table=True):
   id: int = Field(default=None, primary_key=True)
   name: str = Field(index=True, nullable=True)
-  domain: str = Field(unique= True, default=None, nullable=True)
-  websites: List[HttpUrl] = Field(sa_column=Column(ARRAY(String), nullable=True))
+  email: str = Field(index=True, nullable=True)
+  domain: str = Field(unique=True, default=None, nullable=True)
   disabled: bool = Field(default=False , nullable=False)
   users: list["User"] = Relationship(back_populates="orgs", link_model=UserOrgLink) # type: ignore
-  menuTemplates: List["MenuTemplate"] = Relationship(back_populates="org") # type: ignore
-  experiments: List["Experiment"] = Relationship(back_populates="org") # type: ignore
+  menuTemplates: list["MenuTemplate"] = Relationship(back_populates="org") # type: ignore
+  projects: list["Project"] = Relationship(back_populates="org") # type: ignore
+  
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True

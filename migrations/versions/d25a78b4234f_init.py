@@ -1,8 +1,8 @@
-"""initial commit
+"""init
 
-Revision ID: 604c26d20c6d
+Revision ID: d25a78b4234f
 Revises: 
-Create Date: 2025-11-27 20:14:09.805572
+Create Date: 2025-12-02 19:02:46.142276
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = '604c26d20c6d'
+revision: str = 'd25a78b4234f'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -41,14 +41,15 @@ def upgrade() -> None:
     op.create_table('organization',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('domain', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('websites', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('disabled', sa.Boolean(), nullable=False),
     sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('domain')
     )
+    op.create_index(op.f('ix_organization_email'), 'organization', ['email'], unique=False)
     op.create_index(op.f('ix_organization_name'), 'organization', ['name'], unique=False)
     op.create_table('role',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -72,23 +73,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_userinfo_email'), 'userinfo', ['email'], unique=False)
-    op.create_table('experiment',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('js', sa.Text(), nullable=True),
-    sa.Column('css', sa.Text(), nullable=True),
-    sa.Column('url', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('type', sa.Enum('AB_TEST', 'PERSONALIZATION', 'SPLIT_URL', 'REDIRECT', name='experimenttype'), nullable=False),
-    sa.Column('orgId', sa.Integer(), nullable=True),
-    sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('status', sa.Enum('DRAFT', 'ACTIVE', 'PAUSED', 'ARCHIVED', 'ENDED', name='experimentstatus'), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('triggerType', sa.Enum('IMMEDIATELY', 'DOM_READY', 'URL_CHANGES', name='triggertype'), nullable=False),
-    sa.Column('conditionType', sa.Enum('ALL', 'ANY', name='conditiontype'), nullable=False),
-    sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('menutemplate',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -104,6 +88,17 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('roleId')
     )
+    op.create_table('project',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('orgId', sa.Integer(), nullable=True),
+    sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_project_name'), 'project', ['name'], unique=False)
     op.create_table('userorglink',
     sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('orgId', sa.Integer(), nullable=False),
@@ -112,6 +107,33 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
     sa.ForeignKeyConstraint(['userId'], ['userinfo.id'], ),
     sa.PrimaryKeyConstraint('userId', 'orgId')
+    )
+    op.create_table('experiment',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('js', sa.Text(), nullable=True),
+    sa.Column('css', sa.Text(), nullable=True),
+    sa.Column('url', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('type', sa.Enum('AB_TEST', 'PERSONALIZATION', 'SPLIT_URL', 'REDIRECT', name='experimenttype'), nullable=False),
+    sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('status', sa.Enum('DRAFT', 'ACTIVE', 'PAUSED', 'ARCHIVED', 'ENDED', name='experimentstatus'), nullable=False),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('triggerType', sa.Enum('IMMEDIATELY', 'DOM_READY', 'URL_CHANGES', name='triggertype'), nullable=False),
+    sa.Column('conditionType', sa.Enum('ALL', 'ANY', name='conditiontype'), nullable=False),
+    sa.Column('projectId', sa.Integer(), nullable=True),
+    sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['projectId'], ['project.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('userprojectlink',
+    sa.Column('userId', sa.Integer(), nullable=False),
+    sa.Column('projectId', sa.Integer(), nullable=False),
+    sa.Column('disabled', sa.Boolean(), nullable=False),
+    sa.Column('super', sa.Boolean(), nullable=False),
+    sa.Column('permissionType', sa.Enum('OWNER', 'EDITOR', 'VIEWER', name='permissiontype'), nullable=False),
+    sa.ForeignKeyConstraint(['projectId'], ['project.id'], ),
+    sa.ForeignKeyConstraint(['userId'], ['userinfo.id'], ),
+    sa.PrimaryKeyConstraint('userId', 'projectId')
     )
     op.create_table('condition',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -156,14 +178,18 @@ def downgrade() -> None:
     op.drop_table('variation')
     op.drop_table('metrics')
     op.drop_table('condition')
-    op.drop_table('userorglink')
-    op.drop_table('menutemplate')
+    op.drop_table('userprojectlink')
     op.drop_table('experiment')
+    op.drop_table('userorglink')
+    op.drop_index(op.f('ix_project_name'), table_name='project')
+    op.drop_table('project')
+    op.drop_table('menutemplate')
     op.drop_index(op.f('ix_userinfo_email'), table_name='userinfo')
     op.drop_table('userinfo')
     op.drop_index(op.f('ix_role_name'), table_name='role')
     op.drop_table('role')
     op.drop_index(op.f('ix_organization_name'), table_name='organization')
+    op.drop_index(op.f('ix_organization_email'), table_name='organization')
     op.drop_table('organization')
     op.drop_index(op.f('ix_menu_label'), table_name='menu')
     op.drop_table('menu')

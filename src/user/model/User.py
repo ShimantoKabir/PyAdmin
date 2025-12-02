@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy import Column, DateTime, func
 from src.db.links.UserOrgLink import UserOrgLink
+from src.db.links.UserProjectLink import UserProjectLink
 
 class User(SQLModel, table=True):
 
@@ -18,6 +19,7 @@ class User(SQLModel, table=True):
   lastName: str = Field(default=None, nullable=True)
   contactNumber: str = Field(default=None, nullable=True)
   menuTemplates: list["MenuTemplate"] = Relationship(back_populates="user") # type: ignore
+  projects: list["Project"] = Relationship(back_populates="users", link_model=UserProjectLink) # type: ignore
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True
