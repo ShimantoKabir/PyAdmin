@@ -6,8 +6,6 @@ from sqlalchemy import Column, DateTime, func
 class MenuTemplate(SQLModel, table=True):
   id: int = Field(default=None, primary_key=True)
   name: str = Field(default=None, nullable=False)
-  roleId: int = Field(default=None, foreign_key="role.id", unique=True)
-  role: Optional["Role"] = Relationship(back_populates="menuTemplate") # type: ignore
   orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
   org: Optional["Organization"] = Relationship(back_populates="menuTemplates") # type: ignore
   userId: Optional[int] = Field(default=None, foreign_key="userinfo.id")

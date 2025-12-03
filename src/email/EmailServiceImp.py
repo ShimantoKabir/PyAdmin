@@ -24,11 +24,30 @@ class EmailServiceImp(EmailService):
     part = MIMEText(html, "html")
     message.attach(part)
 
-    server = smtplib.SMTP(self.host, self.port)
-    server.set_debuglevel(1)
-    server.esmtp_features['auth'] = 'LOGIN DIGEST-MD5 PLAIN'
-    server.login(self.username, self.password)
-    server.sendmail(self.sender, email, message.as_string())
+    try:
+      # 1. Initialize connection (Plain SMTP)
+      server = smtplib.SMTP(self.host, self.port)
+      server.set_debuglevel(1)
+      
+      # 2. Identify ourselves to the server
+      server.ehlo()
+
+      # NOTE: Do NOT call server.starttls() because the server reported it is not supported.
+      # NOTE: Do NOT manually set server.esmtp_features. Let smtplib handle it.
+      
+      # 3. Login
+      # Python will automatically choose the best auth method (PLAIN, LOGIN, etc.)
+      server.login(self.username, self.password)
+      
+      # 4. Send
+      server.sendmail(self.sender, email, message.as_string())
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+    finally:
+      try:
+          server.quit()
+      except:
+          pass
   
   def sendAccountVerificationOtp(self, email: str, otp: str) -> bool:
     html : str = f"""

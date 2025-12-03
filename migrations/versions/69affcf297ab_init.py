@@ -1,8 +1,8 @@
 """init
 
-Revision ID: d25a78b4234f
+Revision ID: 69affcf297ab
 Revises: 
-Create Date: 2025-12-02 19:02:46.142276
+Create Date: 2025-12-03 12:03:18.135013
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd25a78b4234f'
+revision: str = '69affcf297ab'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -51,14 +51,6 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_organization_email'), 'organization', ['email'], unique=False)
     op.create_index(op.f('ix_organization_name'), 'organization', ['name'], unique=False)
-    op.create_table('role',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_role_name'), 'role', ['name'], unique=False)
     op.create_table('userinfo',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -76,17 +68,14 @@ def upgrade() -> None:
     op.create_table('menutemplate',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('roleId', sa.Integer(), nullable=False),
     sa.Column('orgId', sa.Integer(), nullable=True),
     sa.Column('userId', sa.Integer(), nullable=True),
     sa.Column('tree', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
     sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
-    sa.ForeignKeyConstraint(['roleId'], ['role.id'], ),
     sa.ForeignKeyConstraint(['userId'], ['userinfo.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('roleId')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('project',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -99,6 +88,15 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_project_name'), 'project', ['name'], unique=False)
+    op.create_table('role',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('orgId', sa.Integer(), nullable=True),
+    sa.Column('createdAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
+    sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('userorglink',
     sa.Column('userId', sa.Integer(), nullable=False),
     sa.Column('orgId', sa.Integer(), nullable=False),
@@ -181,13 +179,12 @@ def downgrade() -> None:
     op.drop_table('userprojectlink')
     op.drop_table('experiment')
     op.drop_table('userorglink')
+    op.drop_table('role')
     op.drop_index(op.f('ix_project_name'), table_name='project')
     op.drop_table('project')
     op.drop_table('menutemplate')
     op.drop_index(op.f('ix_userinfo_email'), table_name='userinfo')
     op.drop_table('userinfo')
-    op.drop_index(op.f('ix_role_name'), table_name='role')
-    op.drop_table('role')
     op.drop_index(op.f('ix_organization_name'), table_name='organization')
     op.drop_index(op.f('ix_organization_email'), table_name='organization')
     op.drop_table('organization')

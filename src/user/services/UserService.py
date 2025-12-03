@@ -152,7 +152,7 @@ class UserService:
     if isDomainExist:
       raise HTTPException(status_code=status.HTTP_302_FOUND, detail="This organization already added for this user!")
     
-    org = self.orgRepo.getUserByDomain(reqDto.domain)
+    org = self.orgRepo.getByDomain(reqDto.domain)
 
     if not org:
       org = self.orgRepo.add(

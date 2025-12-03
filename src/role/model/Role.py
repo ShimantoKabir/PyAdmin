@@ -5,8 +5,9 @@ from sqlalchemy import Column, DateTime, func
 
 class Role(SQLModel, table=True):
   id: int = Field(default=None, primary_key=True)
-  name: str = Field(index=True)
-  menuTemplate: Optional["MenuTemplate"] = Relationship(back_populates="role") # type: ignore
+  name: str = Field(default=None, nullable=True)  
+  org: Optional["Organization"] = Relationship(back_populates="roles") # type: ignore
+  orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True

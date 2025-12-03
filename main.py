@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from src.action import ActionRouter
 from src.project import ProjectRouter
+from src.org import OrgRouter
 from core import app
 
 # IMPORT #1: Import all SQLModel models so SQLAlchemy can resolve relationships
@@ -27,7 +28,8 @@ from src.condition.model.Condition import Condition
 from src.metrics.model.Metrics import Metrics
 from src.bucket.model.Bucket import Bucket
 from src.db.links.UserOrgLink import UserOrgLink
-
+from src.db.links.UserProjectLink import UserProjectLink
+from src.project.model.Project import Project
 
 def getEmail(email: Annotated[str, Header()]):
   return email
@@ -40,6 +42,7 @@ app.include_router(ActionRouter.routes, dependencies=[Depends(getEmail), Depends
 app.include_router(ProjectRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
 app.include_router(AuthRouter.routes)
 app.include_router(UserInsecureRouter.routes)
+app.include_router(OrgRouter.routes)
 
 app.add_middleware(AuthMiddleware)
 

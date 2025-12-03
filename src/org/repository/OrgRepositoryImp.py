@@ -9,11 +9,11 @@ class OrgRepositoryImp(OrgRepository):
   def __init__(self, db: DBSessionDep):
     self.db = db
 
-  def getUserByDomain(self, domain: str) -> Organization:
+  def getByDomain(self, domain: str) -> Organization:
     return self.db.exec(select(Organization).filter_by(domain=domain)).first()
 
   def add(self, org: Organization) -> Organization:
-    existOrg = self.getUserByDomain(org.domain)
+    existOrg = self.getByDomain(org.domain)
 
     if existOrg:
       raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Organization already exist by this domain!")

@@ -1,0 +1,3030 @@
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\.dockerignore
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Virtual environment
+.venv
+venv
+env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and editor configuration
+.idea/
+.vscode/
+*.swp
+
+# Local environment files (important for security)
+.env
+.env.*
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\.env.dev
+DB_URL="postgresql://postgres:5432@localhost:5432/pyadmin"
+# DB_URL = 'sqlite:///db.sqlite'
+SECRET_KEY="09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_MINUTES=70
+PASSWORD_MAX_CHAR=8
+
+# mailmug
+HOST=smtp.mailmug.net
+PORT=2525
+UNAME=f6c8skowhf0sevfp
+PASSWORD=55hg6qhuxqzodsdu
+SENDER=pyadmin@mail.com
+
+OTP_EXPIRY_DURATION=180
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\.gitignore
+.venv
+db.sqlite
+__pycache__*
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\alembic.ini
+# A generic, single database configuration.
+
+[alembic]
+# path to migration scripts
+# Use forward slashes (/) also on windows to provide an os agnostic path
+script_location = migrations
+
+# template used to generate migration file names; The default value is %%(rev)s_%%(slug)s
+# Uncomment the line below if you want the files to be prepended with date and time
+# see https://alembic.sqlalchemy.org/en/latest/tutorial.html#editing-the-ini-file
+# for all available tokens
+# file_template = %%(year)d_%%(month).2d_%%(day).2d_%%(hour).2d%%(minute).2d-%%(rev)s_%%(slug)s
+
+# sys.path path, will be prepended to sys.path if present.
+# defaults to the current working directory.
+prepend_sys_path = .
+
+# timezone to use when rendering the date within the migration file
+# as well as the filename.
+# If specified, requires the python>=3.9 or backports.zoneinfo library and tzdata library.
+# Any required deps can installed by adding `alembic[tz]` to the pip requirements
+# string value is passed to ZoneInfo()
+# leave blank for localtime
+# timezone =
+
+# max length of characters to apply to the "slug" field
+# truncate_slug_length = 40
+
+# set to 'true' to run the environment during
+# the 'revision' command, regardless of autogenerate
+# revision_environment = false
+
+# set to 'true' to allow .pyc and .pyo files without
+# a source .py file to be detected as revisions in the
+# versions/ directory
+# sourceless = false
+
+# version location specification; This defaults
+# to migrations/versions.  When using multiple version
+# directories, initial revisions must be specified with --version-path.
+# The path separator used here should be the separator specified by "version_path_separator" below.
+# version_locations = %(here)s/bar:%(here)s/bat:migrations/versions
+
+# version path separator; As mentioned above, this is the character used to split
+# version_locations. The default within new alembic.ini files is "os", which uses os.pathsep.
+# If this key is omitted entirely, it falls back to the legacy behavior of splitting on spaces and/or commas.
+# Valid values for version_path_separator are:
+#
+# version_path_separator = :
+# version_path_separator = ;
+# version_path_separator = space
+# version_path_separator = newline
+#
+# Use os.pathsep. Default configuration used for new projects.
+version_path_separator = os
+
+# set to 'true' to search source files recursively
+# in each "version_locations" directory
+# new in Alembic version 1.10
+# recursive_version_locations = false
+
+# the output encoding used when revision files
+# are written from script.py.mako
+# output_encoding = utf-8
+
+sqlalchemy.url = driver://user:pass@localhost/dbname
+
+
+[post_write_hooks]
+# post_write_hooks defines scripts or Python functions that are run
+# on newly generated revision scripts.  See the documentation for further
+# detail and examples
+
+# format using "black" - use the console_scripts runner, against the "black" entrypoint
+# hooks = black
+# black.type = console_scripts
+# black.entrypoint = black
+# black.options = -l 79 REVISION_SCRIPT_FILENAME
+
+# lint with attempts to fix using "ruff" - use the exec runner, execute a binary
+# hooks = ruff
+# ruff.type = exec
+# ruff.executable = %(here)s/.venv/bin/ruff
+# ruff.options = check --fix REVISION_SCRIPT_FILENAME
+
+# Logging configuration
+[loggers]
+keys = root,sqlalchemy,alembic
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARNING
+handlers = console
+qualname =
+
+[logger_sqlalchemy]
+level = WARNING
+handlers =
+qualname = sqlalchemy.engine
+
+[logger_alembic]
+level = INFO
+handlers =
+qualname = alembic
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(levelname)-5.5s [%(name)s] %(message)s
+datefmt = %H:%M:%S
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\config.py
+import os
+from dotenv import load_dotenv
+
+load_dotenv(".env.dev")
+
+class Config:
+  def getValByKey(key: str) -> str:
+    return os.environ.get(key)
+
+
+
+
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\core.py
+from fastapi import FastAPI
+
+app = FastAPI()
+
+def getAllRoutes() -> list[str]:
+  routes : list[str] = []
+  for route in app.routes:
+    if route.name and str(route.name).startswith("act:"):
+      routes.append(route.name)
+  return routes
+
+@app.get("/",tags=["health"])
+async def test()->str:
+  return "App is running.....!"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\db.py
+from typing import Annotated
+from fastapi import Depends
+from sqlmodel import Session, create_engine
+from config import Config
+
+engine = create_engine(Config.getValByKey("DB_URL"),echo=True)
+
+def get_session():
+  with Session(engine) as session:
+    yield session
+
+DBSessionDep = Annotated[Session, Depends(get_session)]
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\di.py
+from fastapi import Depends, BackgroundTasks
+from typing import Annotated
+from src.user.services.UserService import UserService
+from src.menu.services.MenuService import MenuService
+from src.auth.services.AuthService import AuthService
+from src.role.services.RoleService import RoleService
+from src.menutemplate.services.MenuTemplateService import MenuTemplateService
+from db import DBSessionDep
+from src.menu.repository.MenuRepositoryImp import MenuRepositoryImp
+from src.user.repository.UserRepositoryImp import UserRepositoryImp
+from src.auth.repository.AuthRepositoryImp import AuthRepositoryImp
+from src.role.repository.RoleRepositoryImp import RoleRepositoryImp
+from src.menutemplate.repository.MenuTemplateRepositoryImp import MenuTemplateRepositoryImp
+from src.org.repository.OrgRepositoryImp import OrgRepositoryImp
+from src.db.repository.UserOrgLinkRepositoryImp import UserOrgLinkRepositoryImp
+from src.email.EmailServiceImp import EmailServiceImp
+from passlib.context import CryptContext
+from src.project.services.ProjectService import ProjectService
+from src.project.repository.ProjectRepositoryImp import ProjectRepositoryImp
+from src.db.repository.UserProjectLinkRepositoryImp import UserProjectLinkRepositoryImp
+from src.org.services.OrgService import OrgService
+from src.utils.FileService import FileService
+
+def getUserService(db: DBSessionDep, bgTask: BackgroundTasks) -> UserService:
+  crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
+  userRepo = UserRepositoryImp(db)
+  orgRepo = OrgRepositoryImp(db)
+  userOrgLinkRepo = UserOrgLinkRepositoryImp(db)
+  emailService = EmailServiceImp(bgTask)
+  return UserService(userRepo, orgRepo, userOrgLinkRepo, crypto, emailService)
+
+def getMenuService(db: DBSessionDep) -> MenuService:
+  repo = MenuRepositoryImp(db)
+  return MenuService(repo)
+
+def getRoleService(db: DBSessionDep) -> RoleService:
+  repo = RoleRepositoryImp(db)
+  return RoleService(repo)
+
+def getMenuTemplateService(db: DBSessionDep) -> MenuTemplateService:
+  repo = MenuTemplateRepositoryImp(db)
+  return MenuTemplateService(repo)
+
+def getAuthService(db: DBSessionDep) -> AuthService:
+  crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
+  repo = AuthRepositoryImp(db)
+  return AuthService(repo, crypto)
+
+def getProjectService(db: DBSessionDep) -> ProjectService:
+  projectRepo = ProjectRepositoryImp(db)
+  linkRepo = UserProjectLinkRepositoryImp(db)
+  return ProjectService(projectRepo, linkRepo)
+
+def getFileService() -> FileService:
+  return FileService()
+
+def getOrgService(db: DBSessionDep, bgTask: BackgroundTasks) -> OrgService:
+  orgRepo = OrgRepositoryImp(db)
+  userRepo = UserRepositoryImp(db)
+  roleRepo = RoleRepositoryImp(db)
+  crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
+  fileService = getFileService()
+  emailService = EmailServiceImp(bgTask)
+  return OrgService(orgRepo, userRepo, roleRepo, crypto, fileService, emailService)
+
+UserServiceDep = Annotated[UserService, Depends(getUserService)]
+MenuServiceDep = Annotated[MenuService, Depends(getMenuService)]
+AuthServiceDep = Annotated[AuthService, Depends(getAuthService)]
+RoleServiceDep = Annotated[RoleService, Depends(getRoleService)]
+MenuTemplateServiceDep = Annotated[MenuTemplateService, Depends(getMenuTemplateService)]
+ProjectServiceDep = Annotated[ProjectService, Depends(getProjectService)]
+OrgServiceDep = Annotated[OrgService, Depends(getOrgService)]
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\docker-compose.yml
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    # Change #1: Removed code volume mount for production. Uncomment for development only.
+    # volumes:
+    #   - .:/app
+    # Add this line to load environment variables from the .env.dev file
+    env_file:
+      - .env.dev
+    depends_on:
+      - db
+    # Change #2: Removed --reload for production. Add back for development hot reload.
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=pyadmin
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\Dockerfile
+# Use a newer stable Python version (3.12) as the parent image
+FROM python:3.12-slim
+
+# Set environment variables for Python
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install system dependencies needed for building packages
+# This layer will be cached and only run when this command changes
+RUN apt-get update && apt-get install -y build-essential libpq-dev \
+    # Change #3: Clean up apt cache to reduce image size
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy only the requirements file first
+COPY requirements.txt .
+
+# Install Python dependencies. This layer will only be rebuilt
+# if the requirements.txt file changes.
+RUN pip install --no-cache-dir psycopg2-binary && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Now, copy the rest of the application code. This is the part
+# that will change most often.
+COPY . .
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Command to run the application using uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\main.py
+from fastapi import Depends, Header
+from src.user import UserRouter
+from src.user import UserInsecureRouter
+from src.menu import MenuRouter
+from src.auth import AuthRouter
+from src.role import RoleRouter
+from src.menutemplate import MenuTemplateRouter
+from src.auth.AuthMiddleware import AuthMiddleware
+from fastapi.security import HTTPBearer
+from typing import Annotated
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from src.action import ActionRouter
+from src.project import ProjectRouter
+from src.org import OrgRouter
+from core import app
+
+# IMPORT #1: Import all SQLModel models so SQLAlchemy can resolve relationships
+# This must be done before any router that uses these models
+from src.user.model.User import User
+from src.org.model.Organization import Organization
+from src.menu.model.Menu import Menu
+from src.role.model.Role import Role
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+from src.experiment.model.Experiment import Experiment
+from src.variation.model.Variation import Variation
+from src.condition.model.Condition import Condition
+from src.metrics.model.Metrics import Metrics
+from src.bucket.model.Bucket import Bucket
+from src.db.links.UserOrgLink import UserOrgLink
+from src.db.links.UserProjectLink import UserProjectLink
+from src.project.model.Project import Project
+
+def getEmail(email: Annotated[str, Header()]):
+  return email
+
+app.include_router(UserRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(MenuRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(RoleRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(MenuTemplateRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(ActionRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(ProjectRouter.routes, dependencies=[Depends(getEmail), Depends(HTTPBearer())])
+app.include_router(AuthRouter.routes)
+app.include_router(UserInsecureRouter.routes)
+app.include_router(OrgRouter.routes)
+
+app.add_middleware(AuthMiddleware)
+
+origins = [
+  "http://localhost:3000",  
+  "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=origins,             
+  allow_credentials=True,            
+  allow_methods=["*"],               
+  allow_headers=["*"],               
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\PG-DB-LOCAL.session.sql
+SELECT * FROM userinfo;
+-- SELECT * FROM userorglin
+-- SELECT * FROM organization;
+-- SELECT * FROM role;
+-- SELECT * FROM menutemplate;
+-- SELECT * FROM alembic_version;
+-- DELETE FROM userinfo;
+-- DELETE FROM organization;
+-- DELETE FROM userorglink;
+
+-- UPDATE userinfo SET disabled = false WHERE id='1';
+
+-- DELETE FROM alembic_version WHERE version_num = 'b97a65ac9ca7';
+
+-- DROP TABLE alembic_version;
+-- DROP TABLE menu;
+-- DROP TABLE userinfo;
+-- DROP TABLE organization;
+-- DROP TABLE action;
+-- DROP TABLE userorglink;
+
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\README.md
+# PyAdmin
+
+A user, role, menu, and api access management system built with FastAPI1
+
+# To install all library
+
+```bash
+pip install -r requirements.txt
+```
+
+# To generate project evn
+
+```bash
+python -m venv env
+```
+
+# To active project evn
+
+```bash
+env/Scripts/activate
+```
+
+# DB migration commands
+
+```bash
+alembic init migrations
+```
+
+```bash
+alembic revision --autogenerate -m "initial commit"
+```
+
+```bash
+alembic upgrade head
+```
+
+# To start the development server
+
+```bash
+fastapi dev main.py
+```
+
+# Mail service
+
+For development mailmug has been used
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\requirements.txt
+psycopg2==2.9.10
+alembic==1.15.2
+sqlmodel==0.0.24
+python-dotenv==1.1.0
+# Pinned bcrypt and passlib for compatibility (fixes AttributeError: module 'bcrypt' has no attribute '__about__')
+bcrypt==4.1.2
+passlib[bcrypt]==1.7.4
+pyjwt==2.10.1
+fastapi[standard]
+gunicorn
+httptools==0.7.1
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\migrations\env.py
+from logging.config import fileConfig
+from pathlib import Path
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
+from sqlmodel import SQLModel
+from alembic import context
+from config import Config
+from src.user.model.User import User
+from src.menu.model.Menu import Menu
+from src.org.model.Organization import Organization
+from src.db.links.UserOrgLink import UserOrgLink
+from src.role.model.Role import Role
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+from src.experiment.model.Experiment import Experiment
+from src.variation.model.Variation import Variation
+from src.condition.model.Condition import Condition
+from src.metrics.model.Metrics import Metrics
+from src.bucket.model.Bucket import Bucket
+from src.project.model.Project import Project
+from src.db.links.UserProjectLink import UserProjectLink
+
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
+config = context.config
+
+# sqlite
+# DB_PATH = str((Path().parent / 'db.sqlite').resolve())
+# config.set_main_option('sqlalchemy.url',f"sqlite:///{DB_PATH}")
+
+# postgresql
+config.set_main_option('sqlalchemy.url', Config.getValByKey("DB_URL"))
+
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+target_metadata = SQLModel.metadata
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
+
+
+def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode.
+
+    This configures the context with just a URL
+    and not an Engine, though an Engine is acceptable
+    here as well.  By skipping the Engine creation
+    we don't even need a DBAPI to be available.
+
+    Calls to context.execute() here emit the given string to the
+    script output.
+
+    """
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode.
+
+    In this scenario we need to create an Engine
+    and associate a connection with the context.
+
+    """
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection, target_metadata=target_metadata
+        )
+
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\migrations\README
+Generic single-database configuration.
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\migrations\script.py.mako
+"""${message}
+
+Revision ID: ${up_revision}
+Revises: ${down_revision | comma,n}
+Create Date: ${create_date}
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+import sqlmodel
+${imports if imports else ""}
+
+# revision identifiers, used by Alembic.
+revision: str = ${repr(up_revision)}
+down_revision: Union[str, None] = ${repr(down_revision)}
+branch_labels: Union[str, Sequence[str], None] = ${repr(branch_labels)}
+depends_on: Union[str, Sequence[str], None] = ${repr(depends_on)}
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    ${upgrades if upgrades else "pass"}
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    ${downgrades if downgrades else "pass"}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\action\ActionRouter.py
+from fastapi import APIRouter
+from core import app, getAllRoutes
+
+routes = APIRouter()
+
+@routes.post("/actions", tags=["actions"])
+async def get()-> list[str]:
+  return getAllRoutes()
+  
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\AuthMiddleware.py
+import jwt
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request, Response, status
+from config import Config
+from jwt import ExpiredSignatureError
+
+class AuthMiddleware(BaseHTTPMiddleware):
+
+  def __init__(self, app):
+    super().__init__(app)
+
+  async def dispatch(self, request: Request, call_next)-> Response:
+    excludedPaths = [
+      "/docs",
+      "/openapi.json",
+      "/auth/login", 
+      "/", 
+      "/auth/refresh", 
+      "/users/registration",
+      "/users/verify",
+      "/users/forgot-password-otp",
+      "/static/menu.json"
+    ]
+
+    if request.url.path in excludedPaths:
+      return await call_next(request)
+
+    authorization = request.headers.get("authorization")
+    authEmail = request.headers.get("email")
+    
+    if not authEmail:
+      return Response(content="No mail found on header!",status_code=status.HTTP_403_FORBIDDEN)
+
+    if not authorization:
+      return Response(content="No authorization found!",status_code=status.HTTP_403_FORBIDDEN)
+
+    token = authorization.split(" ")[1].strip()
+    response = await self.verifyToken(token=token, authEmail=authEmail)
+
+    if response:
+      return response
+
+    return await call_next(request)
+  
+  async def verifyToken(self, token: str, authEmail: str):
+    try:
+      payload = jwt.decode(token, Config.getValByKey("SECRET_KEY"), Config.getValByKey("ALGORITHM"))
+    except ExpiredSignatureError as e:
+      return Response(content="Token expired!",status_code=status.HTTP_401_UNAUTHORIZED)
+    
+    payloadEmail = payload.get("sub")
+
+    if payloadEmail is None:
+      return Response(content="No email found on token payload!",status_code=status.HTTP_401_UNAUTHORIZED)
+
+    if authEmail != payloadEmail:
+      raise Response(content="Auth token email didn't match with header token!", status_code=status.HTTP_404_NOT_FOUND)
+    
+
+    
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\AuthRouter.py
+from fastapi import APIRouter
+from src.auth.dtos.LoginResponseDto import LoginResponseDto
+from src.auth.dtos.LoginRequestDto import LoginRequestDto
+from di import AuthServiceDep
+from src.auth.dtos.AuthRefreshResponseDto import AuthRefreshResponseDto
+from src.auth.dtos.AuthRefreshRequestDto import AuthRefreshRequestDto
+
+routes = APIRouter()
+
+@routes.post("/auth/login", response_model=LoginResponseDto, tags=["auth"])
+async def login(loginRequestDto: LoginRequestDto, authService: AuthServiceDep) -> LoginResponseDto:
+  return authService.login(loginRequestDto)
+
+@routes.post("/auth/refresh", response_model=AuthRefreshResponseDto, tags=["auth"])
+async def refresh(authRefreshRequestDto: AuthRefreshRequestDto, authService: AuthServiceDep) -> AuthRefreshResponseDto:
+  return authService.refresh(authRefreshRequestDto)
+  
+  
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\dtos\AuthRefreshRequestDto.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class AuthRefreshRequestDto:
+  refreshToken: constr(min_length=1) # type: ignore
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\dtos\AuthRefreshResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class AuthRefreshResponseDto:
+  accessToken: str
+  refreshToken: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\dtos\LoginRequestDto.py
+from dataclasses import dataclass
+from pydantic import constr, field_validator, EmailStr
+from config import Config
+
+@dataclass
+class LoginRequestDto:
+  email: EmailStr
+  password: constr(min_length=1) # type: ignore
+
+  @field_validator("password")
+  def validatePassword(cls, password):
+    if len(password) < int(Config.getValByKey("PASSWORD_MAX_CHAR")):
+      raise ValueError(f"Password must be at least {Config.getValByKey("PASSWORD_MAX_CHAR")} characters long!")
+    if not any(char.isupper() for char in password):
+      raise ValueError("Password must contain at least one uppercase letter!")
+    if not any(char.islower() for char in password):
+      raise ValueError("Password must contain at least one lowercase letter!")
+    if not any(char.isdigit() for char in password):
+      raise ValueError("Password must contain at least one digit!")
+    if not any(char in "!@#$%^&*()" for char in password):
+      raise ValueError("Password must contain at least one special character!")
+    return password
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\dtos\LoginResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class LoginResponseDto:
+  accessToken: str
+  refreshToken: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\dtos\tokens.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class Token:
+  accessToken: constr(min_length=1) # type: ignore
+  refreshToken: constr(min_length=1) # type: ignore
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\repository\AuthRepository.py
+from abc import ABC, abstractmethod
+from src.user.model.User import User
+
+class AuthRepository(ABC):
+  
+  @abstractmethod
+  def getUserByEmail(self, email: str) -> User:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\repository\AuthRepositoryImp.py
+from src.auth.repository.AuthRepository import AuthRepository
+from di import DBSessionDep
+from src.user.model.User import User
+from sqlmodel import select
+
+class AuthRepositoryImp(AuthRepository):
+
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getUserByEmail(self, email: str) -> User:
+    return self.db.exec(select(User).filter_by(email=email)).first()
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\auth\services\AuthService.py
+import jwt
+from passlib.context import CryptContext
+from src.auth.repository.AuthRepository import AuthRepository
+from src.auth.dtos.LoginRequestDto import LoginRequestDto
+from src.auth.dtos.LoginResponseDto import LoginResponseDto
+from src.user.model.User import User
+from fastapi import status, HTTPException
+from datetime import datetime, timedelta, timezone
+from config import Config
+from src.auth.dtos.AuthRefreshResponseDto import AuthRefreshResponseDto
+from src.auth.dtos.AuthRefreshRequestDto import AuthRefreshRequestDto
+from jwt import ExpiredSignatureError
+from src.auth.dtos.tokens import Token
+
+class AuthService:
+  def __init__(self, authRepository : AuthRepository, crypto: CryptContext):
+    self.repo = authRepository
+    self.crypto = crypto
+
+  def login(self, reqDto: LoginRequestDto) -> str:
+    dbUser: User = self.repo.getUserByEmail(reqDto.email)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    if not dbUser.verified:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not verified yet!")
+  
+    isPasswordVerified = self.crypto.verify(reqDto.password, dbUser.password)
+
+    if not isPasswordVerified:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password!")
+    
+    token = self.generateToken(dbUser)
+
+    res = LoginResponseDto(accessToken=token.accessToken, refreshToken=token.refreshToken)
+    return res
+  
+  def refresh(self, authRefreshRequestDto: AuthRefreshRequestDto)-> AuthRefreshResponseDto:
+    refreshToken = authRefreshRequestDto.refreshToken
+
+    try:
+      payload = jwt.decode(refreshToken, Config.getValByKey("SECRET_KEY"), Config.getValByKey("ALGORITHM"))
+    except ExpiredSignatureError as e:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired!")
+
+    payloadEmail = payload.get("sub")
+
+    if payloadEmail is None:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No email found on token payload!")
+    
+    dbUser: User = self.repo.getUserByEmail(payloadEmail)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    token = self.generateToken(dbUser)
+
+    res  = AuthRefreshResponseDto(accessToken=token.accessToken,refreshToken=token.refreshToken)
+    return res
+  
+  def generateToken(self, user: User)->Token:
+    accessTokenExpires = datetime.now(timezone.utc) + timedelta(minutes=int(Config.getValByKey("ACCESS_TOKEN_EXPIRE_MINUTES")))
+    refreshTokenExpires = datetime.now(timezone.utc) + timedelta(minutes=int(Config.getValByKey("REFRESH_TOKEN_EXPIRE_MINUTES")))
+
+    orgs = []
+    for o in user.orgs:
+      orgs.append({
+        "id": o.id,
+        "name": o.name,
+        "disabled": o.disabled
+      })
+
+    accessToken = jwt.encode({
+      "sub" : user.email,
+      "orgs" : orgs,
+      "exp" : accessTokenExpires
+    }, Config.getValByKey("SECRET_KEY"), Config.getValByKey("ALGORITHM"))
+
+    refreshToken = jwt.encode({
+      "sub" : user.email,
+      "orgs" : orgs,
+      "exp" : refreshTokenExpires
+    }, Config.getValByKey("SECRET_KEY"), Config.getValByKey("ALGORITHM"))
+    
+    return Token(accessToken=accessToken,refreshToken=refreshToken)
+
+  
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\bucket\model\Bucket.py
+from sqlmodel import Field, SQLModel
+from sqlalchemy import Column, DateTime, func
+from datetime import datetime
+from typing import Optional
+
+class Bucket(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  expId: int = Field(default=None, nullable=True)
+  endUserId: int = Field(default=None, nullable=True)
+  variationId: int = Field(default=None, nullable=True)
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\condition\model\Condition.py
+from sqlmodel import Field, SQLModel, ARRAY, String, Relationship
+from typing import Optional, List
+from pydantic import HttpUrl
+from sqlalchemy import Column, DateTime, func
+from datetime import datetime
+
+from src.condition.model.Operator import Operator
+
+class Condition(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  urls: List[HttpUrl] = Field(sa_column=Column(ARRAY(String), nullable=True))
+  operator: Operator = Field(default=Operator.CONTAIN)
+  # FIX #3: Changed back_populates from "Conditions" to "conditions" to match Experiment model
+  experiment: Optional["Experiment"] = Relationship(back_populates="conditions") # type: ignore
+  experimentId: Optional[int] = Field(default=None, foreign_key="experiment.id")
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\condition\model\Operator.py
+from enum import StrEnum
+
+class Operator(StrEnum):
+  NOT_CONTAIN = "NOT CONTAIN"
+  CONTAIN = "CONTAIN"
+  IS = "IS"
+  IS_NOT = "IS_NOT"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\links\PermissionType.py
+from enum import StrEnum
+
+class PermissionType(StrEnum):
+  OWNER = "Owner"
+  EDITOR = "Editor"
+  VIEWER = "Viewer"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\links\UserOrgLink.py
+from sqlmodel import Field, SQLModel
+
+class UserOrgLink(SQLModel, table=True):
+  userId: int | None = Field(default=None, foreign_key="userinfo.id", primary_key=True)
+  orgId: int | None = Field(default=None, foreign_key="organization.id", primary_key=True)
+  disabled: bool = Field(default=True , nullable=False)
+  super: bool = Field(default=False , nullable=False)
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\links\UserProjectLink.py
+from sqlmodel import Field, SQLModel
+from src.db.links.PermissionType import PermissionType
+
+
+class UserProjectLink(SQLModel, table=True):
+  userId: int | None = Field(default=None, foreign_key="userinfo.id", primary_key=True)
+  projectId: int | None = Field(default=None, foreign_key="project.id", primary_key=True)
+  disabled: bool = Field(default=False, nullable=False)
+  super: bool = Field(default=False, nullable=False)
+  permissionType: PermissionType = Field(default=PermissionType.VIEWER)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\repository\UserOrgLinkRepository.py
+from abc import ABC, abstractmethod
+from src.db.links.UserOrgLink import UserOrgLink
+
+class UserOrgLinkRepository(ABC):
+  @abstractmethod
+  def edit(self, userOrgLink: UserOrgLink) -> UserOrgLink|None:
+    pass
+
+  @abstractmethod
+  def get(self, userId: int, orgId: int) -> UserOrgLink:
+    pass
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\repository\UserOrgLinkRepositoryImp.py
+from src.db.repository.UserOrgLinkRepository import UserOrgLinkRepository
+from src.db.links.UserOrgLink import UserOrgLink
+from db import DBSessionDep
+from sqlmodel import select
+
+class UserOrgLinkRepositoryImp(UserOrgLinkRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def get(self, userId: int, orgId: int) -> UserOrgLink|None:
+    return self.db.exec(select(UserOrgLink).filter_by(userId=userId,orgId=orgId)).first()
+
+  def edit(self, userOrgLink: UserOrgLink) -> UserOrgLink:    
+
+    self.db.add(userOrgLink)
+    self.db.commit()
+    self.db.refresh(userOrgLink)
+
+    return userOrgLink
+
+
+
+  
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\repository\UserProjectLinkRepository.py
+from abc import ABC, abstractmethod
+from src.db.links.UserProjectLink import UserProjectLink
+
+class UserProjectLinkRepository(ABC):
+  @abstractmethod
+  def add(self, link: UserProjectLink) -> UserProjectLink:
+    pass
+
+  @abstractmethod
+  def get(self, userId: int, projectId: int) -> UserProjectLink | None:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\db\repository\UserProjectLinkRepositoryImp.py
+from src.db.repository.UserProjectLinkRepository import UserProjectLinkRepository
+from src.db.links.UserProjectLink import UserProjectLink
+from db import DBSessionDep
+from sqlmodel import select
+
+class UserProjectLinkRepositoryImp(UserProjectLinkRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def add(self, link: UserProjectLink) -> UserProjectLink:
+    self.db.add(link)
+    self.db.commit()
+    self.db.refresh(link)
+    return link
+
+  def get(self, userId: int, projectId: int) -> UserProjectLink | None:
+    return self.db.exec(
+      select(UserProjectLink)
+      .where(UserProjectLink.userId == userId)
+      .where(UserProjectLink.projectId == projectId)
+    ).first()
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\email\EmailService.py
+import smtplib
+from abc import ABC, abstractmethod
+
+class EmailService(ABC):
+  
+  @abstractmethod
+  def sendAccountVerificationOtp(email: str, otp: str) -> bool:
+    pass
+
+  @abstractmethod
+  def sendForgotPasswordOtp(email: str, otp: str) -> bool:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\email\EmailServiceImp.py
+import smtplib
+from src.email.EmailService import EmailService
+from fastapi import BackgroundTasks
+from config import Config
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+class EmailServiceImp(EmailService):
+  host: str = Config.getValByKey("HOST")
+  port: int = int(Config.getValByKey("PORT"))
+  username: str = Config.getValByKey("UNAME")
+  password: str = Config.getValByKey("PASSWORD")
+  sender: str = Config.getValByKey("SENDER")
+
+  def __init__(self, bgTask: BackgroundTasks):
+    self.bgTask = bgTask
+
+  def sendMail(self, email: str, html: str, subject: str):
+    message = MIMEMultipart("alternative")
+    message["Subject"] = subject
+    message["From"] = self.sender
+    message["To"] = email
+
+    part = MIMEText(html, "html")
+    message.attach(part)
+
+    server = smtplib.SMTP(self.host, self.port)
+    server.set_debuglevel(1)
+    server.esmtp_features['auth'] = 'LOGIN DIGEST-MD5 PLAIN'
+    server.login(self.username, self.password)
+    server.sendmail(self.sender, email, message.as_string())
+  
+  def sendAccountVerificationOtp(self, email: str, otp: str) -> bool:
+    html : str = f"""
+      <html>
+        <body>
+          <p>Please use this otp: {otp} to verify you account!</p>
+        </body>
+      </html>
+    """
+
+    self.bgTask.add_task(self.sendMail, email, html, "Account verification otp!")
+    return True
+  
+  def sendForgotPasswordOtp(self, email: str, otp: str) -> bool:
+    html : str = f"""
+      <html>
+        <body>
+          <p>Please use this otp: {otp} to reset you password!</p>
+        </body>
+      </html>
+    """
+
+    self.bgTask.add_task(self.sendMail, email, html, "Password reset otp!")
+    return True
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\experiment\model\ConditionType.py
+from enum import StrEnum
+
+class ConditionType(StrEnum):
+  ALL = "ALL"
+  ANY = "ANY"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\experiment\model\Experiment.py
+from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Text, Column, DateTime, func
+from typing import Optional
+from datetime import datetime
+
+from src.experiment.model.ConditionType import ConditionType
+from src.experiment.model.TriggerType import TriggerType
+from src.experiment.model.ExperimentType import ExperimentType
+from src.experiment.model.ExperimentStatus import ExperimentStatus
+
+class Experiment(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  js: str = Field(default=None, nullable=True, sa_type=Text)
+  css: str = Field(default=None, nullable=True, sa_type=Text)
+  url: str = Field(default=None, nullable=True)
+  type: ExperimentType = Field(default=ExperimentType.AB_TEST)
+  title: str = Field(default=None, nullable=True)
+  status: ExperimentStatus = Field(default=ExperimentStatus.DRAFT)
+  metrics: list["Metrics"] = Relationship(back_populates="experiment") # type: ignore
+  conditions: list["Condition"] = Relationship(back_populates="experiment") # type: ignore
+  variations: list["Variation"] = Relationship(back_populates="experiment") # type: ignore
+  description: str = Field(default=None, nullable=True)
+  triggerType: TriggerType = Field(default=TriggerType.IMMEDIATELY)
+  conditionType: ConditionType = Field(default=ConditionType.ALL)
+  project: Optional["Project"] = Relationship(back_populates="experiments") # type: ignore
+  projectId: Optional[int] = Field(default=None, foreign_key="project.id")
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+  
+
+  
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\experiment\model\ExperimentStatus.py
+from enum import StrEnum
+
+class ExperimentStatus(StrEnum):
+  DRAFT = "Draft"
+  ACTIVE = "Active"
+  PAUSED = "Paused"
+  ARCHIVED = "Archived"
+  ENDED = "Ended"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\experiment\model\ExperimentType.py
+from enum import StrEnum
+
+class ExperimentType(StrEnum):
+  AB_TEST = "AB Test"
+  PERSONALIZATION = "Personalization"
+  SPLIT_URL = "Split URL"
+  REDIRECT = "Redirect"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\experiment\model\TriggerType.py
+from enum import StrEnum
+
+class TriggerType(StrEnum):
+  IMMEDIATELY = "Immediately"
+  DOM_READY = "DOM Ready"
+  URL_CHANGES = "URL Changes"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\MenuRouter.py
+from fastapi import APIRouter
+from src.menu.dtos.MenuCreateRequestDto import MenuCreateRequestDto
+from src.menu.dtos.MenuCreateResponseDto import MenuCreateResponseDto
+from src.menu.dtos.MenuResponseDto import MenuResponseDto
+from di import MenuServiceDep
+
+routes = APIRouter()
+
+@routes.post(
+  "/menus/", 
+  response_model= MenuCreateResponseDto, 
+  tags=["menu"],
+  name="act:create-menu"
+)
+async def createMenu(
+    reqDto: MenuCreateRequestDto,
+    menuService: MenuServiceDep
+  )->MenuCreateResponseDto:  
+  return menuService.createMenu(reqDto)
+
+@routes.post(
+  "/menus/all",
+  tags=["menu"],
+  name="act:get-menus",
+  response_model=list[MenuResponseDto]
+)
+async def getMenus(
+  menuService: MenuServiceDep
+) -> list[MenuResponseDto]:  
+  return menuService.getMenus()
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\dtos\MenuCreateRequestDto.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class MenuCreateRequestDto:
+  label: constr(min_length=1) # type: ignore
+  icon: constr(min_length=1) # type: ignore
+  href: constr(min_length=1) # type: ignore
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\dtos\MenuCreateResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class MenuCreateResponseDto:
+  id: int
+  label: str
+  icon: str
+  href: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\dtos\MenuResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class MenuResponseDto:
+  id: int
+  label: str
+  icon: str
+  href: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\model\Menu.py
+from sqlmodel import Field, SQLModel
+
+class Menu(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  label: str = Field(default=None, index=True, nullable=True)
+  icon:  str = Field(default=None, nullable=True)
+  href: str = Field(default=None, nullable=True)
+
+
+    
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\repository\MenuRepository.py
+from abc import ABC, abstractmethod
+from src.menu.model.Menu import Menu
+
+class MenuRepository(ABC):
+  @abstractmethod
+  def getMenuById(self, id: int) -> Menu:
+    pass
+
+  @abstractmethod
+  def add(self, menu: Menu) -> Menu:
+    pass
+
+  @abstractmethod
+  def getAllMenu(self) -> list[Menu]:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\repository\MenuRepositoryImp.py
+from src.menu.repository.MenuRepository import MenuRepository
+from src.menu.model.Menu import Menu
+from db import DBSessionDep
+from fastapi import status, HTTPException
+from sqlmodel import select
+
+class MenuRepositoryImp(MenuRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getMenuById(self, id: int) -> Menu:
+    menu = self.db.get(Menu,id)
+
+    if not menu:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu not found")
+    
+    return menu
+
+  def add(self, menu: Menu) -> Menu:
+    existMenu = self.db.exec(select(Menu).filter_by(label=menu.label)).first()
+
+    if existMenu:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Menu already exist by this name!")
+    
+    self.db.add(menu)
+    self.db.commit()
+    self.db.refresh(menu)
+
+    return menu
+
+  def getAllMenu(self) -> list[Menu]:
+    return self.db.exec(select(Menu)).all()
+
+
+  
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menu\services\MenuService.py
+from src.menu.repository.MenuRepository import MenuRepository
+from src.menu.dtos.MenuCreateRequestDto import MenuCreateRequestDto
+from src.menu.dtos.MenuCreateResponseDto import MenuCreateResponseDto
+from src.menu.model.Menu import Menu;
+from src.menu.dtos.MenuResponseDto import MenuResponseDto
+
+class MenuService:
+  def __init__(self, menuRepository : MenuRepository):
+    self.repo = menuRepository
+
+  def createMenu(self, reqDto: MenuCreateRequestDto) -> MenuCreateResponseDto:
+    newMenu = self.repo.add(Menu(label=reqDto.label, icon=reqDto.icon, href=reqDto.href))
+    resMenu = MenuCreateResponseDto(
+      id=newMenu.id, 
+      label=newMenu.label, 
+      icon=newMenu.icon, 
+      href=newMenu.href
+    )
+    return resMenu
+  
+  def getMenus(self)-> list[MenuResponseDto]:
+    menuResponseDtoList: list[MenuResponseDto] = []
+    menus: list[Menu] = self.repo.getAllMenu()
+
+    for m in menus:
+      menuDto: MenuResponseDto = MenuResponseDto(
+        id=m.id,
+        label=m.label, 
+        icon=m.icon, 
+        href=m.href
+      )
+
+      menuResponseDtoList.append(menuDto)
+
+    return menuResponseDtoList
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\MenuTemplateRouter.py
+from fastapi import APIRouter
+from src.menutemplate.dtos.MenuTemplateCreateRequestDto import MenuTemplateCreateRequestDto
+from src.menutemplate.dtos.MenuTemplateCreateResponseDto import MenuTemplateCreateResponseDto
+from src.menutemplate.dtos.MenuTemplateResponseDto import MenuTemplateResponseDto
+from di import MenuTemplateServiceDep
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+
+routes = APIRouter()
+
+@routes.post(
+  "/menu-templates/", 
+  response_model= MenuTemplateCreateResponseDto, 
+  tags=["menu"],
+  name="act:create-menu-template"
+)
+async def createRole(
+    reqDto: MenuTemplateCreateRequestDto,
+    mtService: MenuTemplateServiceDep
+  )->MenuTemplateCreateResponseDto:  
+  return mtService.createMenuTemplate(reqDto)
+
+@routes.get("/menu-templates/{id}", tags=["menu"], name="act:get-menu-template")
+async def getById(id: int, mtService: MenuTemplateServiceDep)-> MenuTemplateResponseDto:
+  return mtService.getById(id)
+
+@routes.post(
+  "/menu-templates/all",
+  tags=["menu"],
+  name="act:get-menu-templates",
+  response_model=PaginationResponseDto[MenuTemplateResponseDto]
+)
+async def getMenuTemplates(
+  reqDto: PaginationRequestDto, 
+  mtService: MenuTemplateServiceDep
+) -> PaginationResponseDto[MenuTemplateResponseDto]:  
+  return mtService.getMenuTemplates(reqDto)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\dtos\MenuTemplateCreateRequestDto.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class MenuTemplateCreateRequestDto:
+  name: constr(min_length=1) # type: ignore
+  # Removed: roleId
+  orgId: int 
+  tree: constr(min_length=1) # type: ignore
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\dtos\MenuTemplateCreateResponseDto.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class MenuTemplateCreateResponseDto:
+  id: int
+  name: str
+  roleId: int
+  orgId: int
+  tree: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\dtos\MenuTemplateResponseDto.py
+from dataclasses import dataclass
+from pydantic import constr
+from src.role.dtos.RoleResponseDto import RoleResponseDto
+from src.org.dtos.OrgResDto import OrgResDto
+
+@dataclass
+class MenuTemplateResponseDto:
+  id: int
+  name: str
+  orgId: int
+  tree: str
+  orgName: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\model\MenuTemplate.py
+from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional
+from datetime import datetime
+from sqlalchemy import Column, DateTime, func
+
+class MenuTemplate(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  name: str = Field(default=None, nullable=False)
+  orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
+  org: Optional["Organization"] = Relationship(back_populates="menuTemplates") # type: ignore
+  userId: Optional[int] = Field(default=None, foreign_key="userinfo.id")
+  user: Optional["User"] = Relationship(back_populates="menuTemplates") # type: ignore
+  tree: str = Field(default=None, nullable=False)
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+  
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\repository\MenuTemplateRepository.py
+from abc import ABC, abstractmethod
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+
+class MenuTemplateRepository(ABC):
+  @abstractmethod
+  def getMenuTemplateById(self, id: int) -> MenuTemplate:
+    pass
+
+  @abstractmethod
+  def add(self, role: MenuTemplate) -> MenuTemplate:
+    pass
+
+  @abstractmethod
+  def getAllMenuTemplate(self, rows: int, page: int, orgId: int) -> list[MenuTemplate]:
+    pass
+
+  @abstractmethod
+  def countAllMenuTemplate(self, orgId: int) -> int:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\repository\MenuTemplateRepositoryImp.py
+from src.menutemplate.repository.MenuTemplateRepository import MenuTemplateRepository
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+from db import DBSessionDep
+from fastapi import status, HTTPException
+from sqlmodel import select
+from sqlalchemy import func
+
+class MenuTemplateRepositoryImp(MenuTemplateRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getMenuTemplateById(self, id: int) -> MenuTemplate:
+    mt = self.db.get(MenuTemplate,id)
+
+    if not mt:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu template not found")
+    
+    return mt
+
+  def add(self, mt: MenuTemplate) -> MenuTemplate:    
+    self.db.add(mt)
+    self.db.commit()
+    self.db.refresh(mt)
+
+    return mt
+  
+  def getAllMenuTemplate(self, rows: int, page: int, orgId: int)->list[MenuTemplate]:
+    offset: int = (page - 1) * rows
+    return self.db.exec(
+      select(MenuTemplate)
+      .where(MenuTemplate.orgId == orgId)
+      .offset(offset).limit(rows)
+    ).all()
+  
+  def countAllMenuTemplate(self, orgId: int) -> int:
+    return self.db.exec(
+      select(func.count(MenuTemplate.id))
+      .where(MenuTemplate.orgId == orgId)
+    ).one()
+
+
+
+  
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\menutemplate\services\MenuTemplateService.py
+from src.menutemplate.repository.MenuTemplateRepository import MenuTemplateRepository
+from src.menutemplate.dtos.MenuTemplateCreateRequestDto import MenuTemplateCreateRequestDto
+from src.menutemplate.dtos.MenuTemplateCreateResponseDto import MenuTemplateCreateResponseDto
+from src.menutemplate.dtos.MenuTemplateResponseDto import MenuTemplateResponseDto
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+
+class MenuTemplateService:
+  def __init__(self, mtRepository : MenuTemplateRepository):
+    self.repo = mtRepository
+
+  def createMenuTemplate(self, reqDto: MenuTemplateCreateRequestDto) -> MenuTemplateCreateResponseDto:
+    newMt = self.repo.add(MenuTemplate(
+      name=reqDto.name,
+      orgId=reqDto.orgId,
+      tree=reqDto.tree
+    ))
+    
+    resMt = MenuTemplateCreateResponseDto(
+      id=newMt.id,
+      name=reqDto.name,
+      orgId=reqDto.orgId,
+      tree=reqDto.tree
+    )
+    return resMt
+
+  def getById(self, id: int) -> MenuTemplateResponseDto:
+    mt = self.repo.getMenuTemplateById(id=id)
+    return MenuTemplateResponseDto(
+      id=mt.id,
+      name=mt.name,
+      orgId=mt.orgId,
+      orgName=mt.org.name,
+      tree=mt.tree
+    )
+  
+  def getMenuTemplates(self, reqDto: PaginationRequestDto) -> PaginationResponseDto[MenuTemplateResponseDto]:
+    total: int|None = reqDto.total
+    mtResponseDtoList: list[MenuTemplateResponseDto] = []
+    
+    menuTemplates: list[MenuTemplate] = self.repo.getAllMenuTemplate(
+      rows=reqDto.rows, 
+      page=reqDto.page, 
+      orgId=reqDto.orgId
+    )
+
+    if reqDto.total is None or reqDto.total == 0:
+      total = self.repo.countAllMenuTemplate(orgId=reqDto.orgId)
+
+    for mt in menuTemplates:
+      mtDto: MenuTemplateResponseDto = MenuTemplateResponseDto(
+        id=mt.id,
+        name=mt.name,
+        orgId=mt.orgId,
+        orgName=mt.org.name,
+        tree=mt.tree
+      )
+      mtResponseDtoList.append(mtDto)
+
+    return PaginationResponseDto[MenuTemplateResponseDto](items=mtResponseDtoList, total=total)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\metrics\model\Metrics.py
+from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, DateTime, func
+from datetime import datetime
+from typing import Optional
+
+class Metrics(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  title: str = Field(default=None, nullable=True)
+  custom: bool = Field(default=False , nullable=False)
+  selector: str = Field(default=None, nullable=True)
+  triggered: int = Field(default=None, nullable=True)
+  # FIX #4: Changed back_populates from "Metrics" to "metrics" to match Experiment model
+  experiment: Optional["Experiment"] = Relationship(back_populates="metrics") # type: ignore
+  description: str = Field(default=None, nullable=True)
+  experimentId: Optional[int] = Field(default=None, foreign_key="experiment.id")
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\OrgRouter.py
+from fastapi import APIRouter
+from src.org.dtos.OrgAddReqDto import OrgAddReqDto
+from src.org.dtos.OrgAddResDto import OrgAddResDto
+from di import OrgServiceDep
+
+routes = APIRouter()
+
+@routes.post(
+  "/organizations/", 
+  response_model=OrgAddResDto, 
+  tags=["organization"],
+  name="act:create-organization"
+)
+async def createOrganization(
+    reqDto: OrgAddReqDto,
+    orgService: OrgServiceDep
+  ) -> OrgAddResDto:
+  return orgService.createOrg(reqDto)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\dtos\OrgAddReqDto.py
+from dataclasses import dataclass
+from typing import List
+from pydantic import constr, EmailStr
+
+@dataclass
+class OrgAddReqDto:
+  name: constr(min_length=1) # type: ignore
+  email: EmailStr
+  password: constr(min_length=8) # type: ignore
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\dtos\OrgAddResDto.py
+from dataclasses import dataclass
+
+@dataclass
+class OrgAddResDto:
+  id: int
+  name: str 
+  email: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\dtos\OrgResDto.py
+from dataclasses import dataclass
+
+@dataclass
+class OrgResDto:
+  id: int
+  name: str 
+  email: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\model\Organization.py
+from sqlmodel import Field, SQLModel, Relationship, Column, DateTime, func
+from typing import Optional
+from datetime import datetime
+from src.db.links.UserOrgLink import UserOrgLink
+
+class Organization(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  name: str = Field(index=True, nullable=True)
+  email: str = Field(index=True, nullable=True)
+  domain: str = Field(unique=True, default=None, nullable=True)
+  disabled: bool = Field(default=False , nullable=False)
+  roles: list["Role"] = Relationship(back_populates="org") # type: ignore
+  users: list["User"] = Relationship(back_populates="orgs", link_model=UserOrgLink) # type: ignore
+  menuTemplates: list["MenuTemplate"] = Relationship(back_populates="org") # type: ignore
+  projects: list["Project"] = Relationship(back_populates="org") # type: ignore
+  
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\repository\OrgRepository.py
+from abc import ABC, abstractmethod
+from src.org.model.Organization import Organization
+
+class OrgRepository(ABC):
+
+  @abstractmethod
+  def getByDomain(self, domain: str) -> Organization:
+    pass
+
+  @abstractmethod
+  def add(self, org: Organization) -> Organization:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\repository\OrgRepositoryImp.py
+from db import DBSessionDep
+from src.org.repository.OrgRepository import OrgRepository
+from src.org.model.Organization import Organization
+from fastapi import status, HTTPException
+from sqlmodel import select
+
+
+class OrgRepositoryImp(OrgRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getByDomain(self, domain: str) -> Organization:
+    return self.db.exec(select(Organization).filter_by(domain=domain)).first()
+
+  def add(self, org: Organization) -> Organization:
+    existOrg = self.getUserByDomain(org.domain)
+
+    if existOrg:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Organization already exist by this domain!")
+    
+    self.db.add(org)
+    self.db.commit()
+    self.db.refresh(org)
+
+    return org
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\org\services\OrgService.py
+import random
+from src.org.repository.OrgRepository import OrgRepository
+from src.org.dtos.OrgAddReqDto import OrgAddReqDto
+from src.org.dtos.OrgAddResDto import OrgAddResDto
+from src.org.model.Organization import Organization
+from src.user.repository.UserRepository import UserRepository
+from src.user.model.User import User
+from fastapi import HTTPException, status
+from passlib.context import CryptContext
+from src.utils.FileService import FileService
+from src.role.repository.RoleRepository import RoleRepository
+from src.role.model.Role import Role
+from src.menutemplate.repository.MenuTemplateRepository import MenuTemplateRepository
+from src.menutemplate.model.MenuTemplate import MenuTemplate
+from src.email.EmailService import EmailService
+from src.utils.Constants import OTP_POPULATION_DIGITS
+
+class OrgService:
+  def __init__(
+      self, 
+      orgRepo: OrgRepository, 
+      userRepo: UserRepository,
+      roleRepo: RoleRepository,
+      crypto: CryptContext,
+      fileService: FileService,
+      emailService : EmailService
+    ):
+    self.repo = orgRepo
+    self.userRepo = userRepo
+    self.roleRepo = roleRepo
+    self.crypto = crypto
+    self.fileService = fileService
+    self.emailService = emailService
+
+  def createOrg(self, reqDto: OrgAddReqDto) -> OrgAddResDto:
+    # 1. Automatic Domain Extraction
+    try:
+        domain = reqDto.email.split("@")[1]
+    except IndexError:
+      raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format"
+      )
+
+    # 2. Validation: Ensure Org does not exist
+    existingOrg = self.repo.getByDomain(domain)
+    if existingOrg:
+      raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT, 
+        detail="Organization already exists with this domain!"
+      )
+    
+    # 3. Validation: Ensure User does not exist
+    existingUser = self.userRepo.getUserByEmail(reqDto.email)
+    if existingUser:
+      raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail="User already exists with this email!"
+      )
+
+    # 4. Create Organization
+    newOrg = self.repo.add(Organization(
+      name=reqDto.name,
+      email=reqDto.email,
+      domain=domain
+    ))
+
+    # 4. Create Role
+    self.roleRepo.add(Role(name="Admin",orgId=newOrg.id))
+
+    adminMenuTree = self.fileService.readFile("static/menu.json")
+    adminMenuTemplate = MenuTemplate(
+      name="Admin Menu Template",
+      orgId=newOrg.id,
+      tree=adminMenuTree
+    )
+
+    otp = self.generateOtp()
+
+    # 5. Create User and Link Org
+    truncatedPassword = reqDto.password[:72]
+    newUser = self.userRepo.add(User(
+      email=reqDto.email,
+      password=self.crypto.hash(truncatedPassword),
+      verified=False, 
+      otp=otp,
+      orgs=[newOrg],
+      menuTemplates=[adminMenuTemplate]
+    ))
+
+    self.emailService.sendAccountVerificationOtp(newUser.email, otp)
+
+    return OrgAddResDto(
+      id=newOrg.id, 
+      name=newOrg.name, 
+      email=newOrg.email
+    )
+  
+  def generateOtp(self)->str:
+    otp = ''.join(random.choices(OTP_POPULATION_DIGITS, k=6))
+    return otp
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\ProjectRouter.py
+from fastapi import APIRouter, Request, status, HTTPException
+from di import ProjectServiceDep, UserServiceDep
+from src.project.dtos.ProjectCreateRequestDto import ProjectCreateRequestDto
+from src.project.dtos.ProjectCreateResponseDto import ProjectCreateResponseDto
+from src.project.dtos.ProjectResponseDto import ProjectResponseDto
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+
+routes = APIRouter()
+
+@routes.post(
+  "/projects/", 
+  response_model=ProjectCreateResponseDto, 
+  tags=["project"],
+  name="act:create-project"
+)
+async def createProject(
+    reqDto: ProjectCreateRequestDto,
+    projectService: ProjectServiceDep,
+    userService: UserServiceDep,
+    request: Request
+  ) -> ProjectCreateResponseDto:
+  
+  # Extract email from header (set by AuthMiddleware)
+  email = request.headers.get("email")
+  if not email:
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User email not found")
+      
+  # We need the User ID to link them to the project
+  user = userService.repo.getUserByEmail(email)
+  if not user:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+  return projectService.createProject(reqDto, user.id)
+
+@routes.post(
+  "/projects/all",
+  tags=["project"],
+  name="act:get-projects",
+  response_model=PaginationResponseDto[ProjectResponseDto]
+)
+async def getProjects(
+  reqDto: PaginationRequestDto, 
+  projectService: ProjectServiceDep
+) -> PaginationResponseDto[ProjectResponseDto]:  
+  return projectService.getProjects(reqDto)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\dtos\ProjectCreateRequestDto.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class ProjectCreateRequestDto:
+  name: constr(min_length=1) # type: ignore
+  orgId: int # Required (No default value)
+  description: str | None = None # Optional (Has default value, so must go last)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\dtos\ProjectCreateResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class ProjectCreateResponseDto:
+  id: int
+  name: str
+  orgId: int
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\dtos\ProjectResponseDto.py
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ProjectResponseDto:
+  id: int
+  name: str
+  description: Optional[str]
+  orgId: int
+  orgName: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\model\Project.py
+from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, DateTime, func
+from datetime import datetime
+from typing import Optional
+from src.db.links.UserProjectLink import UserProjectLink
+
+class Project(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  name: str = Field(index=True, nullable=False)
+  description: str = Field(default=None, nullable=True)
+  
+  # Parent: Organization
+  org: Optional["Organization"] = Relationship(back_populates="projects") # type: ignore
+  orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
+
+  # Children: Experiments
+  experiments: list["Experiment"] = Relationship(back_populates="project") # type: ignore
+  
+  # Access: Users (via the new link table)
+  users: list["User"] = Relationship(back_populates="projects", link_model=UserProjectLink) # type: ignore
+
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\repository\ProjectRepository.py
+from abc import ABC, abstractmethod
+from src.project.model.Project import Project
+
+class ProjectRepository(ABC):
+  @abstractmethod
+  def getProjectById(self, id: int) -> Project:
+    pass
+
+  @abstractmethod
+  def add(self, project: Project) -> Project:
+    pass
+
+  @abstractmethod
+  def getAllProjects(self, rows: int, page: int, orgId: int) -> list[Project]:
+    pass
+
+  @abstractmethod
+  def countAllProjects(self, orgId: int) -> int:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\repository\ProjectRepositoryImp.py
+from src.project.repository.ProjectRepository import ProjectRepository
+from src.project.model.Project import Project
+from db import DBSessionDep
+from fastapi import status, HTTPException
+from sqlmodel import select
+from sqlalchemy import func
+
+class ProjectRepositoryImp(ProjectRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getProjectById(self, id: int) -> Project:
+    project = self.db.get(Project, id)
+    if not project:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    return project
+
+  def add(self, project: Project) -> Project:
+    # Optional: Check if project name exists within the SAME org
+    existProject = self.db.exec(
+      select(Project)
+      .where(Project.name == project.name)
+      .where(Project.orgId == project.orgId)
+    ).first()
+
+    if existProject:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="Project already exists in this organization!")
+    
+    self.db.add(project)
+    self.db.commit()
+    self.db.refresh(project)
+    return project
+  
+  def getAllProjects(self, rows: int, page: int, orgId: int) -> list[Project]:
+    offset: int = (page - 1) * rows
+    return self.db.exec(
+      select(Project)
+      .where(Project.orgId == orgId)
+      .offset(offset).limit(rows)
+    ).all()
+  
+  def countAllProjects(self, orgId: int) -> int:
+    return self.db.exec(
+      select(func.count(Project.id))
+      .where(Project.orgId == orgId)
+    ).one()
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\project\services\ProjectService.py
+from src.project.repository.ProjectRepository import ProjectRepository
+from src.db.repository.UserProjectLinkRepository import UserProjectLinkRepository
+from src.project.dtos.ProjectCreateRequestDto import ProjectCreateRequestDto
+from src.project.dtos.ProjectCreateResponseDto import ProjectCreateResponseDto
+from src.project.dtos.ProjectResponseDto import ProjectResponseDto
+from src.project.model.Project import Project
+from src.db.links.UserProjectLink import UserProjectLink
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+from src.db.links.PermissionType import PermissionType
+
+class ProjectService:
+  def __init__(
+      self, 
+      projectRepo: ProjectRepository, 
+      linkRepo: UserProjectLinkRepository
+    ):
+    self.repo = projectRepo
+    self.linkRepo = linkRepo
+
+  def createProject(self, reqDto: ProjectCreateRequestDto, userId: int) -> ProjectCreateResponseDto:
+    # 1. Create the project
+    newProject = self.repo.add(Project(
+      name=reqDto.name,
+      description=reqDto.description,
+      orgId=reqDto.orgId
+    ))
+
+    # 2. Link the creating user as a Super Admin for this project
+    self.linkRepo.add(UserProjectLink(
+      userId=userId,
+      projectId=newProject.id,
+      super=True,
+      disabled=False,
+      permissionType=PermissionType.OWNER
+    ))
+
+    return ProjectCreateResponseDto(
+      id=newProject.id,
+      name=newProject.name,
+      orgId=newProject.orgId
+    )
+
+  def getProjects(self, reqDto: PaginationRequestDto) -> PaginationResponseDto[ProjectResponseDto]:
+    total: int | None = reqDto.total
+    
+    if reqDto.total is None or reqDto.total == 0:
+      total = self.repo.countAllProjects(orgId=reqDto.orgId)
+
+    projects: list[Project] = self.repo.getAllProjects(
+      rows=reqDto.rows, 
+      page=reqDto.page, 
+      orgId=reqDto.orgId
+    )
+
+    items: list[ProjectResponseDto] = []
+    for p in projects:
+      items.append(ProjectResponseDto(
+        id=p.id,
+        name=p.name,
+        description=p.description,
+        orgId=p.orgId,
+        orgName=p.org.name if p.org else ""
+      ))
+
+    return PaginationResponseDto[ProjectResponseDto](items=items, total=total)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\RoleRouter.py
+from fastapi import APIRouter
+from src.role.dtos.RoleCreateRequestDto import RoleCreateRequestDto
+from src.role.dtos.RoleCreateResponseDto import RoleCreateResponseDto
+from di import RoleServiceDep
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+from src.role.dtos.RoleResponseDto import RoleResponseDto
+
+routes = APIRouter()
+
+@routes.post(
+  "/roles/", 
+  response_model= RoleCreateResponseDto, 
+  tags=["role"],
+  name="act:create-role"
+)
+async def createRole(
+    role: RoleCreateRequestDto,
+    roleService: RoleServiceDep
+  )->RoleCreateResponseDto:  
+  return roleService.createRole(role)
+
+
+@routes.post(
+  "/roles/all",
+  tags=["role"],
+  name="act:get-roles",
+  response_model=PaginationResponseDto[RoleResponseDto]
+)
+async def getRoles(
+  reqDto: PaginationRequestDto, 
+  roleService: RoleServiceDep
+) -> PaginationResponseDto[RoleResponseDto]:  
+  return roleService.getRoles(reqDto)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\dtos\RoleCreateRequestDto.py
+from dataclasses import dataclass
+from pydantic import constr
+
+@dataclass
+class RoleCreateRequestDto:
+  name: constr(min_length=1) # type: ignore
+  orgId: int # Added: Required to scope the role
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\dtos\RoleCreateResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class RoleCreateResponseDto:
+  id: int
+  name: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\dtos\RoleResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class RoleResponseDto:
+  id: int
+  name: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\model\Role.py
+from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional
+from datetime import datetime
+from sqlalchemy import Column, DateTime, func
+
+class Role(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  name: str = Field(default=None, nullable=True)  
+  org: Optional["Organization"] = Relationship(back_populates="roles") # type: ignore
+  orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+    
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\repository\RoleRepository.py
+from abc import ABC, abstractmethod
+from src.role.model.Role import Role
+
+class RoleRepository(ABC):
+  @abstractmethod
+  def getRoleById(self, id: int) -> Role:
+    pass
+
+  @abstractmethod
+  def add(self, role: Role) -> Role:
+    pass
+
+  @abstractmethod
+  def getAllRole(self, rows: int, page: int, orgId: int) -> list[Role]:
+    pass
+
+  @abstractmethod
+  def countAllRole(self, orgId: int) -> int:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\repository\RoleRepositoryImp.py
+from src.role.repository.RoleRepository import RoleRepository
+from src.role.model.Role import Role
+from db import DBSessionDep
+from fastapi import status, HTTPException
+from sqlmodel import select
+from sqlalchemy import func
+
+class RoleRepositoryImp(RoleRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getRoleById(self, id: int) -> Role:
+    role = self.db.get(Role, id)
+    if not role:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+    return role
+
+  def add(self, role: Role) -> Role:
+    # Change 1: Check uniqueness based on Name AND OrgId
+    existRole = self.db.exec(
+        select(Role)
+        .where(Role.name == role.name)
+        .where(Role.orgId == role.orgId)
+    ).first()
+
+    if existRole:
+      # Option A: Return existing (Idempotent)
+      return existRole
+      # Option B: Raise Error (Strict)
+      # raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Role already exists!")
+    
+    self.db.add(role)
+    self.db.commit()
+    self.db.refresh(role)
+    return role
+  
+  def getAllRole(self, rows: int, page: int, orgId: int) -> list[Role]:
+    offset: int = (page - 1) * rows
+    # Change 2: Simplified query. No join needed.
+    return self.db.exec(
+      select(Role)
+      .where(Role.orgId == orgId)
+      .offset(offset).limit(rows)
+    ).all()
+  
+  def countAllRole(self, orgId: int) -> int:
+    # Change 3: Simplified count query.
+    return self.db.exec(
+      select(func.count(Role.id))
+      .where(Role.orgId == orgId)
+    ).one()
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\role\services\RoleService.py
+from src.role.repository.RoleRepository import RoleRepository
+from src.role.dtos.RoleCreateRequestDto import RoleCreateRequestDto
+from src.role.dtos.RoleCreateResponseDto import RoleCreateResponseDto
+from src.role.model.Role import Role
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+from src.role.dtos.RoleResponseDto import RoleResponseDto
+
+class RoleService:
+  def __init__(self, roleRepository : RoleRepository):
+    self.repo = roleRepository
+
+  def createRole(self, reqDto: RoleCreateRequestDto) -> RoleCreateResponseDto:
+    # Change 1: Pass orgId to Role model
+    newRole = self.repo.add(Role(
+      name=reqDto.name, 
+      orgId=reqDto.orgId
+    ))
+    resRole = RoleCreateResponseDto(id=newRole.id, name=newRole.name)
+    return resRole
+  
+  def getRoles(self, reqDto: PaginationRequestDto) -> PaginationResponseDto[RoleResponseDto]:
+    total: int|None = reqDto.total
+    roleResponseDtoList: list[RoleResponseDto] = []
+    
+    roles: list[Role] = self.repo.getAllRole(
+      rows=reqDto.rows, 
+      page=reqDto.page, 
+      orgId=reqDto.orgId
+    )
+
+    if reqDto.total is None or reqDto.total == 0:
+      total = self.repo.countAllRole(orgId=reqDto.orgId)
+
+    for r in roles:
+      roleDto: RoleResponseDto = RoleResponseDto(
+        id=r.id,
+        name=r.name
+      )
+      roleResponseDtoList.append(roleDto)
+
+    return PaginationResponseDto[RoleResponseDto](items=roleResponseDtoList, total=total)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\UserInsecureRouter.py
+from fastapi import APIRouter
+from di import UserServiceDep
+from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
+from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
+from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
+from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
+from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDto
+from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
+
+routes = APIRouter()
+
+@routes.post(
+  "/users/registration", 
+  response_model=UserCreateResponseDto, 
+  tags=["user"]
+)
+async def registration(
+    reqDto: UserCreateRequestDto,
+    userServiceDep: UserServiceDep
+  )->UserCreateResponseDto:
+  return userServiceDep.createUser(reqDto)
+
+@routes.post("/users/verify", tags=["user"])
+async def verify(
+    reqDto: UserVerificationRequestDto, 
+    userService: UserServiceDep
+  )-> UserVerificationResponseDto:
+  return userService.verify(reqDto)
+
+@routes.post("/users/forgot-password-otp", tags=["user"])
+async def forgotPassword(
+    reqDto: ForgotPasswordOtpRequestDto, 
+    userService: UserServiceDep
+  )-> ForgotPasswordOtpResponseDto:
+  return userService.sendForgotPasswordOtp(reqDto)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\UserRouter.py
+from fastapi import APIRouter, Request
+from src.org.dtos.OrgAddResDto import OrgAddResDto
+from src.org.dtos.OrgAddReqDto import OrgAddReqDto
+from src.user.dtos.UserResponseDto import UserResponseDto
+from di import UserServiceDep
+from fastapi import status, HTTPException
+from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
+from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+
+routes = APIRouter()
+
+@routes.get("/users/{id}", tags=["user"], name="act:get-user")
+async def getById(id: int, userService: UserServiceDep)-> UserResponseDto:
+  return userService.getUserById(id)
+
+@routes.patch(
+  "/users/{userId}/organization/{orgId}", 
+  tags=["user"],
+  name="act:update-user",
+  response_model=UpdateUserResponseDto
+)
+async def updateUser(
+  userId: int, 
+  orgId: int,
+  reqDto: UpdateUserRequestDto, 
+  userService: UserServiceDep
+)-> UserResponseDto:
+  return userService.updateUser(userId, orgId, reqDto)
+
+@routes.post(
+  "/users/organizations", 
+  tags=["user"], 
+  name="act:add-organization", 
+  response_model=OrgAddResDto
+)
+async def addOrg(
+  reqDto: OrgAddReqDto, 
+  userService: UserServiceDep, 
+  request: Request
+)-> OrgAddResDto:
+  authEmail = request.headers.get("email")
+
+  if not authEmail:
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No mail found on header!")
+
+  return userService.addOrg(reqDto, authEmail)
+
+@routes.post(
+  "/users/all",
+  tags=["user"],
+  name="act:get-users",
+  response_model=PaginationResponseDto[UserResponseDto]
+)
+async def getUsers(
+  reqDto: PaginationRequestDto, 
+  userService: UserServiceDep
+) -> PaginationResponseDto[UserResponseDto]:  
+  return userService.getUsers(reqDto)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\ForgotPasswordOtpRequestDto.py
+from dataclasses import dataclass
+from pydantic import EmailStr, constr
+
+@dataclass
+class ForgotPasswordOtpRequestDto:
+  email: EmailStr
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\ForgotPasswordOtpResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class ForgotPasswordOtpResponseDto:
+  message: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UpdateUserRequestDto.py
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class UpdateUserRequestDto:
+  disabled: Optional[bool] = None # Not required
+  super: Optional[bool] = None # Not required
+  firstName: Optional[str] = None  # Not required
+  lastName: Optional[str] = None  # Not required
+  contactNumber: Optional[str] = None  # Not required
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UpdateUserResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class UpdateUserResponseDto:
+  id: int
+  disabled: bool|None
+  super: bool|None
+  firstName: str
+  lastName: str
+  contactNumber: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UserCreateRequestDto.py
+from dataclasses import dataclass
+from pydantic import EmailStr, constr, field_validator
+from config import Config
+
+@dataclass
+class UserCreateRequestDto:
+  email: EmailStr
+  password: constr(min_length=1) # type: ignore
+  
+  @field_validator("password")
+  def validatePassword(cls, password):
+    if len(password) < int(Config.getValByKey("PASSWORD_MAX_CHAR")):
+      raise ValueError(f"Password must be at least {Config.getValByKey("PASSWORD_MAX_CHAR")} characters long!")
+    if not any(char.isupper() for char in password):
+      raise ValueError("Password must contain at least one uppercase letter!")
+    if not any(char.islower() for char in password):
+      raise ValueError("Password must contain at least one lowercase letter!")
+    if not any(char.isdigit() for char in password):
+      raise ValueError("Password must contain at least one digit!")
+    if not any(char in "!@#$%^&*()" for char in password):
+      raise ValueError("Password must contain at least one special character!")
+    return password
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UserCreateResponseDto.py
+from dataclasses import dataclass
+from pydantic import EmailStr
+
+@dataclass
+class UserCreateResponseDto:
+  id: int
+  email: EmailStr
+  message: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UserResponseDto.py
+from dataclasses import dataclass
+from pydantic import EmailStr
+from typing import Optional
+
+@dataclass
+class UserResponseDto:
+  id: int
+  email: EmailStr
+  verified: bool
+  firstName: str
+  lastName: str
+  contactNumber: str
+  disabled: Optional[bool] = None
+  super: Optional[str] = None
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UserVerificationRequestDto.py
+from pydantic import EmailStr, constr
+from dataclasses import dataclass
+
+@dataclass
+class UserVerificationRequestDto:
+  otp: constr(min_length=6) # type: ignore
+  email: EmailStr
+  
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\dtos\UserVerificationResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class UserVerificationResponseDto:
+  message: str
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\model\User.py
+from typing import Optional
+from datetime import datetime
+from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, DateTime, func
+from src.db.links.UserOrgLink import UserOrgLink
+from src.db.links.UserProjectLink import UserProjectLink
+
+class User(SQLModel, table=True):
+
+  __tablename__ = "userinfo"
+
+  id: int = Field(default=None, primary_key=True)
+  email: str = Field(index=True)
+  password: str 
+  otp: str = Field(default=None, nullable=True)
+  verified: bool = Field(default=False , nullable=False)
+  orgs: list["Organization"] = Relationship(back_populates="users", link_model=UserOrgLink) # type: ignore
+  firstName: str = Field(default=None, nullable=True)
+  lastName: str = Field(default=None, nullable=True)
+  contactNumber: str = Field(default=None, nullable=True)
+  menuTemplates: list["MenuTemplate"] = Relationship(back_populates="user") # type: ignore
+  projects: list["Project"] = Relationship(back_populates="users", link_model=UserProjectLink) # type: ignore
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+    
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\repository\UserRepository.py
+from abc import ABC, abstractmethod
+from src.user.model.User import User
+
+class UserRepository(ABC):
+  @abstractmethod
+  def getUserById(self, id: int) -> User:
+    pass
+
+  @abstractmethod
+  def add(self, user: User) -> User:
+    pass
+
+  @abstractmethod
+  def getUserByEmail(self, email: str) -> User:
+    pass
+
+  @abstractmethod
+  def updateUser(self, user: User) -> User:
+    pass
+
+  @abstractmethod
+  def getAllUser(self, rows: int, page: int, orgId: int) -> list[User]:
+    pass
+
+  @abstractmethod
+  def countAllUser(self, orgId: int) -> int:
+    pass
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\repository\UserRepositoryImp.py
+from src.user.repository.UserRepository import UserRepository
+from src.user.model.User import User
+from db import DBSessionDep
+from fastapi import status, HTTPException
+from sqlmodel import select
+from sqlalchemy import func
+from src.db.links.UserOrgLink import UserOrgLink
+
+class UserRepositoryImp(UserRepository):
+  def __init__(self, db: DBSessionDep):
+    self.db = db
+
+  def getUserById(self, id: int) -> User:
+    user = self.db.get(User,id)
+    if not user:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+  def add(self, user: User) -> User:
+    existUser = self.db.exec(select(User).filter_by(email=user.email)).first()
+
+    if existUser:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="User already exist by this name!")
+    
+    self.db.add(user)
+    self.db.commit()
+    self.db.refresh(user)
+
+    return user
+  
+  def getUserByEmail(self, email: str) -> User:
+    return self.db.exec(select(User).filter_by(email=email)).first()
+  
+  def updateUser(self, user: User):
+
+    self.db.add(user)
+    self.db.commit()
+    self.db.refresh(user)
+
+    return user
+  
+  def getAllUser(self, rows: int, page: int, orgId: int)->list[User]:
+    offset: int = (page - 1) * rows
+    return self.db.exec(
+      select(User, UserOrgLink)
+      .join(UserOrgLink, UserOrgLink.userId == User.id)
+      .where(UserOrgLink.orgId == orgId)
+      .offset(offset).limit(rows)
+    ).all()
+  
+  def countAllUser(self, orgId: int) -> int:
+    return self.db.exec(
+      select(func.count(User.id))
+      .select_from(UserOrgLink)
+      .join(User, UserOrgLink.userId==User.id)
+      .where(UserOrgLink.orgId == orgId)
+    ).one()
+    
+    
+
+  
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\user\services\UserService.py
+import random
+from config import Config
+from src.user.model.User import User
+from datetime import datetime, timezone
+from passlib.context import CryptContext
+from fastapi import status, HTTPException
+from src.org.dtos.OrgAddReqDto import OrgAddReqDto
+from src.org.dtos.OrgAddResDto import OrgAddResDto
+from src.user.dtos.UserCreateRequestDto import UserCreateRequestDto
+from src.user.dtos.UserCreateResponseDto import UserCreateResponseDto
+from src.user.repository.UserRepository import UserRepository
+from src.user.dtos.UserResponseDto import UserResponseDto
+from src.user.dtos.UserVerificationRequestDto import UserVerificationRequestDto
+from src.user.dtos.UserVerificationResponseDto import UserVerificationResponseDto
+from src.email.EmailService import EmailService
+from src.user.dtos.ForgotPasswordOtpRequestDto import ForgotPasswordOtpRequestDto
+from src.user.dtos.ForgotPasswordOtpResponseDto import ForgotPasswordOtpResponseDto
+from src.org.model.Organization import Organization
+from src.org.repository.OrgRepository import OrgRepository
+from src.user.dtos.UpdateUserRequestDto import UpdateUserRequestDto
+from src.user.dtos.UpdateUserResponseDto import UpdateUserResponseDto
+from src.db.repository.UserOrgLinkRepository import UserOrgLinkRepository
+from src.db.links.UserOrgLink import UserOrgLink
+from src.utils.pagination.PaginationRequestDto import PaginationRequestDto
+from src.utils.pagination.PaginationResponseDto import PaginationResponseDto
+from src.utils.Constants import OTP_POPULATION_DIGITS, USER_CREATION_RES_MSG
+
+class UserService:
+  otpExpiryDuration: int = int(Config.getValByKey("OTP_EXPIRY_DURATION"))
+
+  def __init__(
+    self, 
+    userRepository : UserRepository, 
+    orgRepository: OrgRepository,
+    userOrgLinkRepo: UserOrgLinkRepository,
+    crypto: CryptContext,
+    emailService : EmailService
+  ):
+    self.repo = userRepository
+    self.crypto = crypto
+    self.emailService = emailService
+    self.orgRepo = orgRepository
+    self.userOrgLinkRepo = userOrgLinkRepo
+
+  def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
+    otp = self.generateOtp()
+    
+    # FIX #1: Truncate password to 72 bytes (bcrypt limit)
+    # bcrypt cannot hash passwords longer than 72 bytes. This prevents the error:
+    # "ValueError: password cannot be longer than 72 bytes"
+    truncatedPassword = reqDto.password[:72]
+    
+    newUser = self.repo.add(User(
+      email=reqDto.email,
+      password=self.crypto.hash(truncatedPassword),
+      otp=otp,
+      orgs=[],
+      menuTemplates=[]
+    ))
+
+    self.emailService.sendAccountVerificationOtp(newUser.email, otp)
+
+    org: Organization|None = newUser.orgs[0] if newUser.orgs[0] else None
+
+    if org is not None:
+      userOrgLink: UserOrgLink = self.userOrgLinkRepo.get(userId=newUser.id,orgId=org.id)
+      userOrgLink.disabled = False
+      userOrgLink.super = True
+      updatedUserOrgLink = self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
+
+    resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=USER_CREATION_RES_MSG)
+    return resUser
+  
+  def getUserById(self, id: int)-> UserResponseDto:
+    dbUser = self.repo.getUserById(id=id)
+    return UserResponseDto(
+      id=dbUser.id, 
+      email=dbUser.email,
+      contactNumber=dbUser.contactNumber,
+      firstName=dbUser.firstName,
+      lastName=dbUser.lastName,
+      verified=dbUser.verified
+    )
+  
+  def generateOtp(self)->str:
+    otp = ''.join(random.choices(OTP_POPULATION_DIGITS, k=6))
+    return otp
+  
+  def verify(self, reqDto: UserVerificationRequestDto)-> UserVerificationResponseDto:
+
+    dbUser: User = self.repo.getUserByEmail(reqDto.email)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    if dbUser.verified:
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already verified!")
+    
+    if not dbUser.createdAt:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No otp creation date found to calculate otp expiration!")
+
+    otpDuration: int = self.calculateSecondDiff(datetime.now(timezone.utc), dbUser.createdAt)
+
+    if otpDuration > self.otpExpiryDuration :
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Otp expired!")
+
+    if dbUser.otp != reqDto.otp:
+      raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Otp didn't match!")
+    
+    dbUser.verified = True
+
+    self.repo.updateUser(dbUser)
+
+    resDto = UserVerificationResponseDto(message="User verified successfully!")
+    return resDto
+  
+  def sendForgotPasswordOtp(
+      self, 
+      reqDto: ForgotPasswordOtpRequestDto
+    ) -> ForgotPasswordOtpResponseDto :
+    
+    dbUser: User = self.repo.getUserByEmail(reqDto.email)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    otp = self.generateOtp()
+    dbUser.otp = otp
+    self.repo.updateUser(dbUser)
+
+    self.emailService.sendForgotPasswordOtp(dbUser.email, otp)
+
+    return ForgotPasswordOtpResponseDto(message="To reset your password, a otp has been sent to your mail!")
+  
+  def calculateSecondDiff(self, end: datetime, start: datetime) -> int:
+    timeDiff = end - start
+    return timeDiff.seconds
+
+  def addOrg(self, reqDto: OrgAddReqDto, authMail: str) -> OrgAddResDto: 
+    dbUser: User = self.repo.getUserByEmail(authMail)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
+    
+    try:
+      domain = reqDto.email.split("@")[1]
+    except IndexError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format!")
+
+    isDomainExist = any(org.domain == reqDto.domain for org in dbUser.orgs)
+
+    if isDomainExist:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="This organization already added for this user!")
+    
+    org = self.orgRepo.getByDomain(reqDto.domain)
+
+    if not org:
+      org = self.orgRepo.add(
+        Organization(
+          name=reqDto.name,
+          email=reqDto.email,
+          domain=domain
+        )
+      )
+
+    dbUser.orgs.append(org)
+    self.repo.updateUser(dbUser)
+
+    return OrgAddResDto(id=org.id, name=org.name, email=org.email)
+
+  def updateUser(self, userId: int, orgId: int, reqDto: UpdateUserRequestDto)-> UpdateUserResponseDto:
+    dbUser: User = self.repo.getUserById(userId)
+
+    if not dbUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this ID!")
+    
+    if reqDto.firstName:
+      dbUser.firstName = reqDto.firstName
+
+    if reqDto.lastName:
+     dbUser.lastName = reqDto.lastName
+
+    if reqDto.contactNumber:
+      dbUser.contactNumber = reqDto.contactNumber
+
+    updateUser = self.repo.updateUser(dbUser)
+
+    userOrgLink: UserOrgLink|None = self.userOrgLinkRepo.get(userId=userId,orgId=orgId)
+
+    if userOrgLink is not None:
+      if reqDto.disabled is not None:
+        userOrgLink.disabled = reqDto.disabled
+
+      if reqDto.super is not None:
+        userOrgLink.super = reqDto.super
+
+      self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
+
+    return UpdateUserResponseDto(
+      id=updateUser.id, 
+      disabled= None if userOrgLink is None else userOrgLink.disabled,
+      super= None if userOrgLink is None else userOrgLink.super,
+      firstName=updateUser.firstName,
+      lastName=updateUser.lastName,
+      contactNumber=updateUser.contactNumber
+    )
+  
+  def getUsers(self, reqDto: PaginationRequestDto)->PaginationResponseDto[UserResponseDto]:
+    total: int|None = reqDto.total
+    userResponseDtoList: list[UserResponseDto] = []
+    users: list[User] = self.repo.getAllUser(rows=reqDto.rows, page=reqDto.page, orgId=reqDto.orgId)
+
+    if reqDto.total is None or reqDto.total == 0:
+      total = self.repo.countAllUser(orgId=reqDto.orgId)
+
+    for u,l in users:
+      urDto: UserResponseDto = UserResponseDto(
+        id=u.id,
+        email=u.email,
+        contactNumber=u.contactNumber,
+        firstName=u.firstName,
+        lastName=u.lastName,
+        verified=u.verified,
+        super=l.super,
+        disabled=l.disabled
+      )
+
+      userResponseDtoList.append(urDto)
+
+    return PaginationResponseDto[UserResponseDto](items=userResponseDtoList, total=total)
+
+
+
+
+
+
+    
+    
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\utils\Constants.py
+OTP_POPULATION_DIGITS = "0123456789"
+USER_CREATION_RES_MSG = (
+  "A otp has been sent to your mail, please use the otp and verify your account!"
+)
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\utils\FileService.py
+from pathlib import Path
+
+class FileService:
+  def readFile(self, relativePath: str) -> str:
+    # Current file: src/utils/FileService.py
+    # .parent = src/utils
+    # .parent.parent = src
+    # .parent.parent.parent = Project Root
+    basePath = Path(__file__).resolve().parent.parent.parent
+    filePath = basePath / relativePath
+    
+    try:
+      with open(filePath, "r", encoding="utf-8") as f:
+        return f.read()
+    except FileNotFoundError:
+      # Return empty JSON list as fallback
+      return "[]"
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\utils\pagination\PaginationRequestDto.py
+from dataclasses import dataclass
+from pydantic import Field
+from typing import Optional
+
+@dataclass
+class PaginationRequestDto:
+  orgId: int
+  rows: int = Field(..., gt=0)
+  page: int = Field(..., gt=0)
+  total: Optional[int] = None
+
+  
+  
+
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\utils\pagination\PaginationResponseDto.py
+from dataclasses import dataclass
+
+@dataclass
+class PaginationResponseDto[T]:
+  items: list[T]
+  total: int
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\src\variation\model\Variation.py
+from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Text, Column, DateTime, func
+from typing import Optional
+from datetime import datetime
+
+class Variation(SQLModel, table=True):
+  id: int = Field(default=None, primary_key=True)
+  js: str = Field(default=None, nullable=True, sa_type=Text)
+  css: str = Field(default=None, nullable=True, sa_type=Text)
+  title: str = Field(default=None, nullable=True)
+  traffic: int = Field(default=None, nullable=True)
+  # FIX #2: Changed back_populates from "Variations" to "variations" to match Experiment model
+  experiment: Optional["Experiment"] = Relationship(back_populates="variations") # type: ignore
+  experimentId: Optional[int] = Field(default=None, foreign_key="experiment.id")
+  createdAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), server_default=func.now(), nullable=True
+    )
+  )
+  updatedAt: Optional[datetime] = Field(
+    sa_column=Column(
+      DateTime(timezone=True), onupdate=func.now(), nullable=True
+    )
+  )
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\PyAdmin\static\menu.json
+[
+  {
+    "key": "1",
+    "label": "User",
+    "data": {
+      "href": "/user"
+    },
+    "icon": "pi pi-fw pi-calendar"
+  },
+  {
+    "key": "2",
+    "label": "Role",
+    "data": {
+      "href": "/role"
+    },
+    "icon": "pi pi-fw pi-star-fill"
+  },
+  {
+    "key": "0",
+    "label": "Menu",
+    "icon": "pi pi-fw pi-inbox",
+    "children": [
+      {
+        "key": "0-1",
+        "label": "Template",
+        "icon": "pi pi-fw pi-calendar-plus",
+        "data": {
+          "href": "/menu/template"
+        }
+      },
+      {
+        "key": "0-2",
+        "label": "Manage",
+        "icon": "pi pi-fw pi-calendar-plus",
+        "data": {
+          "href": "/menu/manage"
+        }
+      }
+    ]
+  }
+]
+
+

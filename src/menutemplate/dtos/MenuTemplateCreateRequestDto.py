@@ -4,6 +4,6 @@ from pydantic import constr
 @dataclass
 class MenuTemplateCreateRequestDto:
   name: constr(min_length=1) # type: ignore
-  roleId: int # required
-  orgId: int # required
+  # Removed: roleId
+  orgId: int 
   tree: constr(min_length=1) # type: ignore

@@ -4,7 +4,7 @@ from src.org.model.Organization import Organization
 class OrgRepository(ABC):
 
   @abstractmethod
-  def getUserByDomain(self, domain: str) -> Organization:
+  def getByDomain(self, domain: str) -> Organization:
     pass
 
   @abstractmethod

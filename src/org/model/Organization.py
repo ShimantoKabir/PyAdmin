@@ -9,6 +9,7 @@ class Organization(SQLModel, table=True):
   email: str = Field(index=True, nullable=True)
   domain: str = Field(unique=True, default=None, nullable=True)
   disabled: bool = Field(default=False , nullable=False)
+  roles: list["Role"] = Relationship(back_populates="org") # type: ignore
   users: list["User"] = Relationship(back_populates="orgs", link_model=UserOrgLink) # type: ignore
   menuTemplates: list["MenuTemplate"] = Relationship(back_populates="org") # type: ignore
   projects: list["Project"] = Relationship(back_populates="org") # type: ignore

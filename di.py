@@ -18,6 +18,8 @@ from passlib.context import CryptContext
 from src.project.services.ProjectService import ProjectService
 from src.project.repository.ProjectRepositoryImp import ProjectRepositoryImp
 from src.db.repository.UserProjectLinkRepositoryImp import UserProjectLinkRepositoryImp
+from src.org.services.OrgService import OrgService
+from src.utils.FileService import FileService
 
 def getUserService(db: DBSessionDep, bgTask: BackgroundTasks) -> UserService:
   crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -49,10 +51,23 @@ def getProjectService(db: DBSessionDep) -> ProjectService:
   linkRepo = UserProjectLinkRepositoryImp(db)
   return ProjectService(projectRepo, linkRepo)
 
+def getFileService() -> FileService:
+  return FileService()
+
+def getOrgService(db: DBSessionDep, bgTask: BackgroundTasks) -> OrgService:
+  orgRepo = OrgRepositoryImp(db)
+  userRepo = UserRepositoryImp(db)
+  roleRepo = RoleRepositoryImp(db)
+  crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
+  fileService = getFileService()
+  emailService = EmailServiceImp(bgTask)
+  return OrgService(orgRepo, userRepo, roleRepo, crypto, fileService, emailService)
+
 UserServiceDep = Annotated[UserService, Depends(getUserService)]
 MenuServiceDep = Annotated[MenuService, Depends(getMenuService)]
 AuthServiceDep = Annotated[AuthService, Depends(getAuthService)]
 RoleServiceDep = Annotated[RoleService, Depends(getRoleService)]
 MenuTemplateServiceDep = Annotated[MenuTemplateService, Depends(getMenuTemplateService)]
 ProjectServiceDep = Annotated[ProjectService, Depends(getProjectService)]
+OrgServiceDep = Annotated[OrgService, Depends(getOrgService)]
 
