@@ -8,3 +8,5 @@ class UpdateUserRequestDto:
   firstName: Optional[str] = None  # Not required
   lastName: Optional[str] = None  # Not required
   contactNumber: Optional[str] = None  # Not required
+  roleId: Optional[int] = None 
+  menuTemplateId: Optional[int] = None

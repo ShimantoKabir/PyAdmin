@@ -7,10 +7,14 @@ class MenuTemplate(SQLModel, table=True):
   id: int = Field(default=None, primary_key=True)
   name: str = Field(default=None, nullable=False)
   orgId: Optional[int] = Field(default=None, foreign_key="organization.id")
-  org: Optional["Organization"] = Relationship(back_populates="menuTemplates") # type: ignore
+  org: Optional["Organization"] = Relationship(back_populates="menuTemplates") # type: ignore 
   userId: Optional[int] = Field(default=None, foreign_key="userinfo.id")
-  user: Optional["User"] = Relationship(back_populates="menuTemplates") # type: ignore
+  user: Optional["User"] = Relationship(back_populates="menuTemplates") # type: ignore 
   tree: str = Field(default=None, nullable=False)
+  
+  # 1. Added relationship back to UserOrgLink
+  userOrgLinks: list["UserOrgLink"] = Relationship(back_populates="menuTemplate") # type: ignore 
+
   createdAt: Optional[datetime] = Field(
     sa_column=Column(
       DateTime(timezone=True), server_default=func.now(), nullable=True
@@ -21,5 +25,3 @@ class MenuTemplate(SQLModel, table=True):
       DateTime(timezone=True), onupdate=func.now(), nullable=True
     )
   )
-  
-

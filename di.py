@@ -58,10 +58,26 @@ def getOrgService(db: DBSessionDep, bgTask: BackgroundTasks) -> OrgService:
   orgRepo = OrgRepositoryImp(db)
   userRepo = UserRepositoryImp(db)
   roleRepo = RoleRepositoryImp(db)
+  
+  # Change #1: Instantiate UserOrgLinkRepo and MenuTemplateRepo
+  userOrgLinkRepo = UserOrgLinkRepositoryImp(db)
+  mtRepo = MenuTemplateRepositoryImp(db)
+  
   crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
   fileService = getFileService()
   emailService = EmailServiceImp(bgTask)
-  return OrgService(orgRepo, userRepo, roleRepo, crypto, fileService, emailService)
+  
+  # Change #2: Pass new repos to OrgService
+  return OrgService(
+    orgRepo, 
+    userRepo, 
+    roleRepo, 
+    crypto, 
+    fileService, 
+    emailService, 
+    userOrgLinkRepo, 
+    mtRepo
+  )
 
 UserServiceDep = Annotated[UserService, Depends(getUserService)]
 MenuServiceDep = Annotated[MenuService, Depends(getMenuService)]
@@ -70,4 +86,3 @@ RoleServiceDep = Annotated[RoleService, Depends(getRoleService)]
 MenuTemplateServiceDep = Annotated[MenuTemplateService, Depends(getMenuTemplateService)]
 ProjectServiceDep = Annotated[ProjectService, Depends(getProjectService)]
 OrgServiceDep = Annotated[OrgService, Depends(getOrgService)]
-

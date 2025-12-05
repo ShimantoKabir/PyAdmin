@@ -1,18 +1,19 @@
 from fastapi import APIRouter
-from src.org.dtos.OrgAddReqDto import OrgAddReqDto
-from src.org.dtos.OrgAddResDto import OrgAddResDto
+from src.org.dtos.OrgCreateRequestDto import OrgCreateRequestDto
+from src.org.dtos.OrgCreateResponseDto import OrgCreateResponseDto
 from di import OrgServiceDep
 
 routes = APIRouter()
 
 @routes.post(
   "/organizations", 
-  response_model=OrgAddResDto, 
+  response_model=OrgCreateResponseDto, 
   tags=["organization"],
   name="act:create-organization"
 )
 async def createOrganization(
-    reqDto: OrgAddReqDto,
+    # 1. Switched to the new Create DTOs
+    reqDto: OrgCreateRequestDto,
     orgService: OrgServiceDep
-  ) -> OrgAddResDto:
+  ) -> OrgCreateResponseDto:
   return orgService.createOrg(reqDto)

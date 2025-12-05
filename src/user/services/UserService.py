@@ -45,28 +45,17 @@ class UserService:
   def createUser(self, reqDto : UserCreateRequestDto) -> UserCreateResponseDto:
     otp = self.generateOtp()
     
-    # FIX #1: Truncate password to 72 bytes (bcrypt limit)
-    # bcrypt cannot hash passwords longer than 72 bytes. This prevents the error:
-    # "ValueError: password cannot be longer than 72 bytes"
     truncatedPassword = reqDto.password[:72]
     
     newUser = self.repo.add(User(
       email=reqDto.email,
       password=self.crypto.hash(truncatedPassword),
       otp=otp,
-      orgs=[],
-      menuTemplates=[]
+      orgs=[],         
+      menuTemplates=[] 
     ))
 
     self.emailService.sendAccountVerificationOtp(newUser.email, otp)
-
-    org: Organization|None = newUser.orgs[0] if newUser.orgs[0] else None
-
-    if org is not None:
-      userOrgLink: UserOrgLink = self.userOrgLinkRepo.get(userId=newUser.id,orgId=org.id)
-      userOrgLink.disabled = False
-      userOrgLink.super = True
-      updatedUserOrgLink = self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
 
     resUser = UserCreateResponseDto(id=newUser.id,email=newUser.email,message=USER_CREATION_RES_MSG)
     return resUser
@@ -136,35 +125,36 @@ class UserService:
     timeDiff = end - start
     return timeDiff.seconds
 
+  # 1. Update logic to use the strict fields from OrgAddReqDto
   def addOrg(self, reqDto: OrgAddReqDto, authMail: str) -> OrgAddResDto: 
-    dbUser: User = self.repo.getUserByEmail(authMail)
+    adminUser: User = self.repo.getUserByEmail(authMail)
+    if not adminUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Admin user not found!")
 
-    if not dbUser:
-      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found by this email!")
-    
-    try:
-      domain = reqDto.email.split("@")[1]
-    except IndexError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format!")
+    targetUser: User = self.repo.getUserByEmail(reqDto.email)
+    if not targetUser:
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User to add not found!")
 
-    isDomainExist = any(org.domain == reqDto.domain for org in dbUser.orgs)
-
-    if isDomainExist:
-      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="This organization already added for this user!")
-    
+    # 2. Domain is now mandatory in the DTO, so we use it directly
     org = self.orgRepo.getByDomain(reqDto.domain)
 
     if not org:
-      org = self.orgRepo.add(
-        Organization(
-          name=reqDto.name,
-          email=reqDto.email,
-          domain=domain
-        )
-      )
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found!")
 
-    dbUser.orgs.append(org)
-    self.repo.updateUser(dbUser)
+    existingLink = self.userOrgLinkRepo.get(userId=targetUser.id, orgId=org.id)
+    if existingLink:
+      raise HTTPException(status_code=status.HTTP_302_FOUND, detail="User is already in this organization!")
+    
+    newLink = UserOrgLink(
+      userId=targetUser.id,
+      orgId=org.id,
+      roleId=reqDto.roleId,
+      menuTemplateId=reqDto.menuTemplateId,
+      disabled=False,
+      super=False
+    )
+    
+    self.userOrgLinkRepo.add(newLink)
 
     return OrgAddResDto(id=org.id, name=org.name, email=org.email)
 
@@ -193,6 +183,12 @@ class UserService:
 
       if reqDto.super is not None:
         userOrgLink.super = reqDto.super
+      
+      if reqDto.roleId is not None:
+        userOrgLink.roleId = reqDto.roleId
+        
+      if reqDto.menuTemplateId is not None:
+        userOrgLink.menuTemplateId = reqDto.menuTemplateId
 
       self.userOrgLinkRepo.edit(userOrgLink=userOrgLink)
 
@@ -208,6 +204,7 @@ class UserService:
   def getUsers(self, reqDto: PaginationRequestDto)->PaginationResponseDto[UserResponseDto]:
     total: int|None = reqDto.total
     userResponseDtoList: list[UserResponseDto] = []
+    
     users: list[User] = self.repo.getAllUser(rows=reqDto.rows, page=reqDto.page, orgId=reqDto.orgId)
 
     if reqDto.total is None or reqDto.total == 0:
@@ -228,11 +225,3 @@ class UserService:
       userResponseDtoList.append(urDto)
 
     return PaginationResponseDto[UserResponseDto](items=userResponseDtoList, total=total)
-
-
-
-
-
-
-    
-    

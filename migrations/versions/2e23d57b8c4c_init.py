@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 69affcf297ab
+Revision ID: 2e23d57b8c4c
 Revises: 
-Create Date: 2025-12-03 12:03:18.135013
+Create Date: 2025-12-05 17:49:21.784590
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = '69affcf297ab'
+revision: str = '2e23d57b8c4c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -97,15 +97,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('userorglink',
-    sa.Column('userId', sa.Integer(), nullable=False),
-    sa.Column('orgId', sa.Integer(), nullable=False),
-    sa.Column('disabled', sa.Boolean(), nullable=False),
-    sa.Column('super', sa.Boolean(), nullable=False),
-    sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
-    sa.ForeignKeyConstraint(['userId'], ['userinfo.id'], ),
-    sa.PrimaryKeyConstraint('userId', 'orgId')
-    )
     op.create_table('experiment',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('js', sa.Text(), nullable=True),
@@ -122,6 +113,19 @@ def upgrade() -> None:
     sa.Column('updatedAt', sa.DateTime(timezone=True), nullable=True),
     sa.ForeignKeyConstraint(['projectId'], ['project.id'], ),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('userorglink',
+    sa.Column('userId', sa.Integer(), nullable=False),
+    sa.Column('orgId', sa.Integer(), nullable=False),
+    sa.Column('roleId', sa.Integer(), nullable=True),
+    sa.Column('menuTemplateId', sa.Integer(), nullable=True),
+    sa.Column('disabled', sa.Boolean(), nullable=False),
+    sa.Column('super', sa.Boolean(), nullable=False),
+    sa.ForeignKeyConstraint(['menuTemplateId'], ['menutemplate.id'], ),
+    sa.ForeignKeyConstraint(['orgId'], ['organization.id'], ),
+    sa.ForeignKeyConstraint(['roleId'], ['role.id'], ),
+    sa.ForeignKeyConstraint(['userId'], ['userinfo.id'], ),
+    sa.PrimaryKeyConstraint('userId', 'orgId')
     )
     op.create_table('userprojectlink',
     sa.Column('userId', sa.Integer(), nullable=False),
@@ -177,8 +181,8 @@ def downgrade() -> None:
     op.drop_table('metrics')
     op.drop_table('condition')
     op.drop_table('userprojectlink')
-    op.drop_table('experiment')
     op.drop_table('userorglink')
+    op.drop_table('experiment')
     op.drop_table('role')
     op.drop_index(op.f('ix_project_name'), table_name='project')
     op.drop_table('project')

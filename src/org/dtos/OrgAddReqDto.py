@@ -1,10 +1,14 @@
 from dataclasses import dataclass
-from typing import List
 from pydantic import constr, EmailStr
 
 @dataclass
 class OrgAddReqDto:
-  name: constr(min_length=1) # type: ignore
+  # 1. The email of the existing user to add
   email: EmailStr
-  password: constr(min_length=8) # type: ignore
-
+  
+  # 2. The domain of the organization to add them to
+  domain: constr(min_length=1) # type: ignore
+  
+  # 3. Permissions are mandatory when adding a user
+  roleId: int
+  menuTemplateId: int
